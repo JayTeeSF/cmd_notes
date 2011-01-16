@@ -1,0 +1,26 @@
+# Good for returning other formats:
+
+# just an array of hashes:
+MyARModel.all.map(&:attributes)
+# or:
+MyARModel.all.map(&:attributes).to_json
+# or:
+MyARModel.all.map(&:attributes).to_xml
+
+# e.g.
+GeneralizedProgramName.all(:limit => 2).map(&:attributes)
+# =>
+[
+  {
+    "name"=>"Administration Business",
+    "created_at"=>Mon Dec 13 20:45:49 -0800 2010,
+    "updated_at"=>Mon Dec 13 20:45:49 -0800 2010,
+    "id"=>12306
+  },
+  {
+    "name"=>"Accounting Business",
+    "created_at"=>Mon Dec 13 20:45:49 -0800 2010,
+    "updated_at"=>Mon Dec 13 20:45:49 -0800 2010,
+    "id"=>12307
+  }
+]

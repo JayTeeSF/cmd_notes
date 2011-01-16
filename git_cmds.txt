@@ -1,0 +1,118 @@
+# grep for a patch in the repository
+git log -p -5 --grep=slim -- db/migrate/
+  # -p (patch, the +- lines)
+  # -5 (window of 5 lines)
+  # -grep (cool!)
+  # -- <only search under this directory-path>
+
+git whatchanged # better than git log
+
+git stash show # outputs like a git-pull or like my 'git lg' alias
+git stash show -p # outputs like a full 'git diff' ...but against the stash
+
+add --word-diff for easier bug-fixing:
+git show 8d95603 --word-diff
+e.g.  displayed_offers_keys = [-displayes_offers_keys.reject-]{+displayed_offers_keys.reject+} { |k| k =~ /expiration$/ }
+
+# jim weirich's favorite git-log cmd -- aliased to 'git hash':
+#
+#git log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
+#
+#It looks like this:
+#Output:
+#
+#$ git log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
+#* ce5cd7a 2011-01-15 | Added a comment (HEAD, master) [Jim Weirich]
+#* c001137 2011-01-15 | Added a default value [Jim Weirich]
+#* f2c8431 2011-01-15 | Using ARGV [Jim Weirich]
+#* 3fc57ff 2011-01-15 | First Commit [Jim Weirich]
+#
+#Let’s look at it in detail:
+#
+#    * --pretty="..." defines the format of the output.
+#    * %h is the abbreviated hash of the commit
+#    * %d are any decorations on that commit (e.g. branch heads or tags)
+#    * %ad is the author date
+#    * %s is the comment
+#    * %an is the author name
+#    * --graph informs git to display the commit tree in an ASCII graph layout
+#    * --date=short keeps the date format nice and short
+
+# which of my branches contain a particular sha?
+prompt> git branch --contains 89162e445a8069be8b74822de8b36f44982a27bc
+  7938_fe_suppression_ui
+    jt_fe_ui
+
+setup remote tracking branch for current branch:
+git push -u
+
+# git help -wEB pages:
+# jaytee@Jonathan-Thomass-MacBook-Pro-2 ~/dev/chemistry[fe_suppression]$ git help -w rerere
+#
+# git rerere FORGET:
+# git rerere forget app/controllers/admin/offer_suppressions_controller.rb
+# jaytee@Jonathan-Thomass-MacBook-Pro-2 ~/dev/chemistry[fe_suppression]$ git rerere forget spec/controllers/admin/offer_suppressions_controller.rb
+#
+
+
+# if a tracking branch gets foobar'd one approach is to:
+git pull --rebase # supposedly this will get the stuff on the branch, and put mystuff ontop
+# instead I did: git reset --soft <last-good-commit>
+# copied my files to my .ignore directory ;-)
+# stashed my files
+# blew away all branches related to the problem
+# recreated the tracking branch
+# recreated my working branch (from the tracking branch)
+# stash-applied (as opposed to "pop'ing" just in case)
+# git add ...
+# git commit ...
+# (see workflow below: fetch/rebase/checkout <tracking branch>/pull/merge/push)
+
+to update list of gib branches:
+git remote prune origin
+# git commit -m "fixes #7529"
+
+git clone ssh://gitolite@gitserver.affinitylabs.com/leadgen
+
+# find stuff that I authored (in git log):
+# git log --author=jthomas
+
+# stash my stuff:
+# git branch
+#=>  <this branch>
+# git stash save fastweb_models
+#=> Saved working directory and index state On 6535_UoPWidget: fastweb_models
+#=> HEAD is now at 12f2990 fix joins; sort & filter results; fixes #6535
+# git stash list
+#=> stash@{0}: On 6535_UoPWidget: fastweb_models
+
+# git checkout ...blah
+
+# git checkout <this branch>
+# git stash pop
+#or more specifically:
+# git stash pop stash@{0} #<-- of course this _IS_ the top ...so it's redundant,
+# instead you can do:
+# git stash pop stash@{1}
+#
+# Git workflow
+#
+#     * Never work on a tracking branch
+#     * Always create a topic branch for every feature and every bugfix
+#     * Avoid merge commits unless it's really a merge
+#
+#       git checkout -b <topic_branch>
+#       git fetch origin
+#       git rebase origin/master #rebase frequently
+#
+#       # Interactive rebase to squash your commits before merging back to master
+#       git rebase -i origin/master
+#       git checkout master
+#       git pull
+#       git merge <topic_branch>
+#       git push origin master
+#
+#       # Delete the topic branch
+#       git branch -d <topic_branch>
+#
+#

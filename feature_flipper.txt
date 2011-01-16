@@ -1,0 +1,13 @@
+to flip a feature
+checkout config/initializers/redis_feature_flipper.rb
+it creates an instance of the Feature, and passes it to the flipper
+We then:
+(a) create a constant in supported.rb
+# behind the scenes flipper loads these constants
+# flipper then has enable, disable and enabled?(feature-constant) method(s)
+# for turning features on, off, and informing you of their state...
+
+in your code use your constant like so:
+Feature.enabled?(Feature::MYFEATURE)
+  do something;
+end

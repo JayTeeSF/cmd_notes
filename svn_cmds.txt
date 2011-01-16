@@ -1,0 +1,64 @@
+  567  cd raw_svn/
+  568  cd release/
+
+  570  svn up
+
+  571  svn status
+  572  svn merge http://svn.<corporate_server>.com/affinity/alchemy/trunk -c 28469  --ignore-ancestry
+  573  svn status
+  574  svn commit -m "merge r28469 to release"
+  575  svn status
+
+  582  ssh deployment@stage.<corporate_server>.com
+
+  # from within Git repo, I can run svn cmds!!!
+  prompt$ svn ls http://svn.<corporate_server>.com/affinity/alchemy
+  branches/
+  release/
+  tags/
+  trunk/
+
+
+  prompt$ svn ls http://svn.<corporate_server>.com/affinity/alchemy/branches
+  fastweb_wizard/
+  rails_2.2.2/
+  release-rollback-2009_05_21/
+
+  prompt$ svn delete http://svn.<corporate_server>.com/affinity/alchemy/branches/fastweb_wizard
+
+  Committed revision 28613.
+
+
+  prompt$ svn ls http://svn.<corporate_server>.com/affinity/alchemy/branches
+  rails_2.2.2/
+  release-rollback-2009_05_21/
+
+# recreated the branch, this time it was FASTER, because when I cloned I didn't worry about "-t tags" (just -T trunk & -b branches)
+git svn branch -m "Branch for working on new fastweb reg w/ David" fastweb_wizard
+
+> git branch -a
+* master
+  remotes/fastweb_wizard
+  remotes/trunk
+
+
+# now I should be able to create a local git branch that tracks that SVN branch... per: http://trac.parrot.org/parrot/wiki/git-svn-tutorial
+
+    git checkout --track -b fastweb_wizard_local remotes/fastweb_wizard # to avoid warning from git about ambiguity
+    git reset --hard remotes/fastweb_wizard
+    ... hack/git commit/git commit --amend/git rebase -i HEAD~10/... as usual
+
+# dcommit to svn
+
+    git svn dcommit --dry-run # check that it will commit to proper svn branch.
+    git svn dcommit
+
+
+# and when we're done:
+Merging branch back to trunk
+
+    git checkout master
+    git svn rebase
+    git merge --squash extra_cool_feature
+    git commit -m "Merge branch into trunk" 
+

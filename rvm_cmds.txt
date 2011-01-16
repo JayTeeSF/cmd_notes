@@ -1,0 +1,23 @@
+> rvm ree@wiz
+> gem list
+
+*** LOCAL GEMS ***
+
+rake (0.8.7)
+
+> rvm gemset copy ree ree@wiz
+ Copying gemset from ree to ree@wiz
+
+> gem list
+
+*** LOCAL GEMS ***
+
+actionmailer (2.2.2)
+actionpack (2.2.2)
+...
+
+> gem install wizardly --source=http://gemcutter.org
+
+> gem list | grep wiz
+wizardly (0.1.8.9)
+

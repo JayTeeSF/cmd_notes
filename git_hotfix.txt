@@ -1,0 +1,19 @@
+# find the latest tag (either in chemistry-campfire room or via the tags)
+git tag
+
+# create/checkout a hotfix-branch: hotfix_<tag> <tag>
+git checkout -b hotfix_2010_q4_01.00 2010_q4_01.00
+
+# confirm that it worked, by diffing with the tag:
+git diff 2010_q4_01.00
+
+# Cherry pick the commits (from a local topic branch)
+git cherry-pick 158b753428c1bf61efd1322101ecd3eedfe66d85
+
+# make hotfix branch a tracking branch (i.e. accessible from central git-server )
+git push -u
+
+# don't merge hotfix branch w/ master (until absolutely necessary -- if ever)
+# don't delete my original branch
+# (i.e. where those SHA's came from, incase we end-up releasing master, before the hotfix is requested
+# ...in which case, I can merge that branch back to master, and delete this hotfix branch)

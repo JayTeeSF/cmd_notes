@@ -1,0 +1,8 @@
+# rails c
+require 'rubinius/agent'
+# => nil 
+rbx-1.0.1-20100603 > agent = Rubinius::Agent.loopback
+# => #<Rubinius::Agent:0x14db6 @io=#<IO:0x14db8> @decoder=#<BERT::Decode:0x14dba @in=#<IO:0x14db8> @peeked=""> @encoder=#<BERT::Encode:0x14dbe @out=#<IO:0x14db8>>> 
+agent.get "system.name"
+# => [:list, t["Darwin", "Jonathan-Thomass-MacBook-Pro-2.local", "10.2.0", "Darwin Kernel Version 10.2.0: Tue Nov  3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386", "i386"]] 
+

@@ -1,0 +1,4 @@
+from cloned git-repo w/ spec file:
+gem build refinerycms.gemspec
+# then:
+gem install refinerycms-0.9.9.pre.gem

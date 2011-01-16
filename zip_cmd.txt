@@ -1,0 +1,2 @@
+create a zip-file (e.g. of the 'degree' directory) from the cmdline:
+zip -r degree.zip degree/

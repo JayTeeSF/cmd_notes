@@ -1,0 +1,8 @@
+You can enabled memcached to automatically load on login with:
+    launchctl load -w /usr/local/Cellar/memcached/1.4.4/com.danga.memcached.plist
+
+Or start it manually:
+    /usr/local/bin/memcached
+
+Add "-d" to start it as a daemon.
+

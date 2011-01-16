@@ -1,0 +1,12 @@
+  506  od -c Desktop/BrokenSnippet.txt | grep --color '\\.'
+  507  more Desktop/BrokenSnippet.txt 
+  508  showendlines(){ while read i; do od --address-radix=n --width=$(wc -c <<< "$i") -c <<< "$i" | perl -pe 's/.\K\s{2,3}//g'; done < $1 | grep --color '\\.'; }
+  509  showendlines Desktop/BrokenSnippet.txt 
+  527  od -c Desktop/BrokenSnippet.txt | egrep --color '000|\\.' >Desktop/BrokenSnippet_od.txt
+  531  od -c Desktop/minus_spaces_works.txt | egrep --color '000|\\.' >Desktop/minus_spaces_works_od.txt 
+  533  egrep --color '000|\\.' Desktop/minus_spaces_works_od.txt 
+  egrep --color '000|\\.' Desktop/BrokenSnippet_od.txt
+
+# new (barely working) code:
+od -c Desktop/still_working_minus_returns.txt | egrep --color '000|\\.' > Desktop/still_working_minus_returns_od.txt
+  egrep --color '000|\\.' Desktop/still_working_minus_returns_od.txt 

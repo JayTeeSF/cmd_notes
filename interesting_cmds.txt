@@ -1,0 +1,1 @@
+CNT=$(pgrep redis-server | wc -l);  while [ "$CNT" -gt 3 ]; do sleep 5; CNT=$(pgrep redis-server | wc -l); done

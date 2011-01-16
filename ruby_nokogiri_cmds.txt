@@ -1,0 +1,68 @@
+xml = "<foo wam='bam'>bar</foo>"
+# => "<foo wam='bam'>bar</foo>" 
+
+doc = Nokogiri::XML(xml)
+# => #<Nokogiri::XML::Document:0x8080cf98 name="document" children=[#<Nokogiri::XML::Element:0x8080c6b0 name="foo" attributes=[#<Nokogiri::XML::Attr:0x8080c3f4 name="wam" value="bam">] children=[#<Nokogiri::XML::Text:0x8080b594 "bar">]>]> 
+
+doc.at_css("foo")["wam"]
+# => "bam" 
+
+doc.at_css("foo").attributes
+# => {"wam"=>#<Nokogiri::XML::Attr:0x8085287c name="wam" value="bam">}
+
+doc.at_css("foo").content
+# => "bar" 
+
+xml = "<foo wam='bam' thank='you'><bar odd='val'>baz</bar></foo>"
+
+doc = Nokogiri::XML(xml)
+
+doc.children
+# => [#<Nokogiri::XML::Element:0x809f1764 name="foo" attributes=[#<Nokogiri::XML::Attr:0x809f1584 name="wam" value="bam">, #<Nokogiri::XML::Attr:0x809f1548 name="thank" value="you">] children=[#<Nokogiri::XML::Element:0x809f0b34 name="bar" attributes=[#<Nokogiri::XML::Attr:0x809f092c name="odd" value="val">] children=[#<Nokogiri::XML::Text:0x809f001c "baz">]>]>] 
+
+doc.children.map(&:name)
+# => ["foo"] 
+
+doc.children.map(&:name).each do |node_name|
+  puts doc.at_css(node_name)
+  puts doc.at_css(node_name).inspect
+end
+
+<foo wam="bam" thank="you">
+  <bar odd="val">baz</bar>
+</foo>
+#<Nokogiri::XML::Element:0x809f1764 name="foo" attributes=[#<Nokogiri::XML::Attr:0x809f1584 name="wam" value="bam">, #<Nokogiri::XML::Attr:0x809f1548 name="thank" value="you">] children=[#<Nokogiri::XML::Element:0x809f0b34 name="bar" attributes=[#<Nokogiri::XML::Attr:0x809f092c name="odd" value="val">] children=[#<Nokogiri::XML::Text:0x809f001c "baz">]>]>
+# => ["foo"] 
+
+
+xml = %Q{
+         <response status="ok" version="1.2">
+           <tracks>
+             <page>1</page><pageSize>10</pageSize><totalItems>1457</totalItems>
+             <track id="88"><title>MJ</title></track>
+             <track id="89"><title>JJ</title></track>
+           </tracks>
+         </response>
+      }
+
+xml = %Q{
+         <response status="ok" version="1.2">
+           <searchResults><page>1</page><pageSize>10</pageSize><totalItems>1457</totalItems>
+             <searchResult><type>artist</type><artist id="88"><name>MJ</name></artist></searchResult>
+             <searchResult><type>artist</type><artist id="89"><name>JJ</name></artist></searchResult>
+           </searchResults>
+         </response>
+      }
+
+doc.at("response").children.map(&:name)
+# => ["searchResults"]
+
+doc.at("response").attributes
+# => {"version"=>#<Nokogiri::XML::Attr:0x8082f05c name="version" value="1.2">, "status"=>#<Nokogiri::XML::Attr:0x8082f070 name="status" value="ok">} 
+
+doc.at("response")["version"]
+# => "1.2" 
+
+doc.at("response")["status"]
+# => "ok" 
+

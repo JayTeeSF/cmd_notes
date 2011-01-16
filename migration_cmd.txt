@@ -1,0 +1,10 @@
+script/generate migration change_bottom_728x90_ad_on_newsletter
+#manual: ...though it might have automated, if we appended: <column>:<data_type>
+#up:
+#change_column :newsletter, :bottom_728x90_ad, :text
+#down:
+#change_column :newsletter, :bottom_728x90_ad, :string
+#
+#
+rails g migration add_blah_to_table column:string
+# auto...

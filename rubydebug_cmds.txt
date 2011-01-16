@@ -1,0 +1,12 @@
+gem install cheat
+cheat rubydebug
+
+# put "debugger" as a "breakpoint" in your ruby code...
+
+s to step-into
+n to goto next line
+up to go up a frame (in case you do delve down too deep)
+down to go down a frame
+and
+list to show where you are in the code
+

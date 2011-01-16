@@ -1,0 +1,32 @@
+cntrl-cmd-r => open the folders to reveal the current file
+cntrl-shift-g => Blame Annotated...
+
+apple-T fuzzy # file finder
+apple-shift-T # method finder
+
+apple-shift-F # find in project for search & replace; slow but cool!
+
+apple-opt-[ # fix indention
+apple-opt-] # align the equal signs from a bunch of lines
+apple-l # goto line # ___
+
+:<tab> # make a hash key
+
+# rspec bundle-specific
+apple-r # run all the rspec-tests
+apple-shift-r # run a single rspec-tests
+
+cntrl-k Kill # to end of line
+cntrl-y Yank # like cut?!
+cntrl-/ # comment out a chunk
+apple-<right-arrow> # jump to the end of the line
+
+cntrl-u # upper-case
+
+cntrl-opt-cmd-shift-T (?!) for the 
+
+###
+Now there is a much easier way: the GetBundle bundle by Sebastian G.... All you need to do is download and double click it to get an "Install Bundle" command which you can invoke from inside TextMate (hint: use ⌃⌘T and enter "install".)
+
+
+

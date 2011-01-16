@@ -1,0 +1,7 @@
+# poor-man's timing -- see rubyprof &/ benchmarking
+begin_time = Time.now.to_f
+ <code to test>
+end_time = Time.now.to_f          
+elapsed_time = end_time - begin_time
+Rails.logger.debug "elapsed time: #{elapsed_time}" # => e.g. elapsed time: 0.28682804107666 seconds
+

@@ -1,0 +1,7 @@
+on "server" machine:
+# touch the .git/git-daemon-export-ok file
+
+git daemon --export-all --enable=receive-pack --reuseaddr --verbose --base-path=/Developer/working/alchemy/
+
+on my machine:
+git clone git://SERVER.local/

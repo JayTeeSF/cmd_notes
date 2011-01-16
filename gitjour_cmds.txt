@@ -1,0 +1,24 @@
+gem install gitjour
+rehash
+cd <rails_root>
+gitjour serve <rails_root> "alchemy"
+#it prefixes w/ your username (e.g. dfl, in this case)
+
+gitjour list
+#Gathering for up to 5 seconds...
+#=== dfl-alchemy on aurora.local.:9418 ===
+#  gitjour (clone|pull) dfl-alchemy
+
+
+# dr. nic suggests *also* installing dnssd
+# per: 
+# http://drnicwilliams.com/2008/06/18/what-is-gitjour-gemjour-starjour/
+# gem install dnssd
+#
+# also checkout:
+# http://www.viget.com/extend/adding-gitjour-to-your-hack-night-toolset/
+#  if you want others to push changes back to you ...add these lines to your local .git/config file:
+#
+#  [daemon]
+#    receivepack = true
+#

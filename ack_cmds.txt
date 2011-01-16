@@ -1,0 +1,8 @@
+# use .ackrc
+
+# the following just lists file names (I believe ...check perl regx vars)
+ack article_list --output="$&"
+
+# show commands that are in .erb files (G is for regx)
+ack -G.erb "password_field" --output="$&"
+

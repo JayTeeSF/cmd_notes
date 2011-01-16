@@ -1,0 +1,12 @@
+rake slim_tables:rotate; # one-time
+rake redis:reload; #long time
+rake redis:load_caps # after 5pm: daily (note: this is run as part of rake redis:reload)
+)
+
+# For use alongside Alchemy, be sure to:
+# point to .loc instead .com
+ChemistryApiConfig.each do |conf|
+conf.url.gsub(/\.com/,".loc")
+end
+
+# i.e. alchemy as .com chemistry as .loc

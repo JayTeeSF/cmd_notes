@@ -1,0 +1,12 @@
+require 'ruby-prof'
+RubyProf.start
+        
+ret_val = <target_code>
+
+printer = RubyProf::GraphHtmlPrinter.new( RubyProf.stop )
+my_file = File.new("/tmp/profile_html_output", "a")
+printer.print(my_file, :min_percent=>0)
+my_file.close
+
+return ret_val
+

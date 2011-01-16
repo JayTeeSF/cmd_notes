@@ -1,0 +1,22 @@
+Setup hostFile Switching:
+
+(1) auto-mount the Public volume when you log in:
+- In the Finder, hit Command+k to open the "Connect to Server" dialog.
+- Enter "smb://10.33.5.3/", click Connect, and authenticate with the first-part of your affinitylabs.com email username & password.
+(i.e. <first_part>@affinity... / pwd )
+- Go to Apple Menu -> System Preferences -> Accounts, select your account, and click Login Items.
+- Click "+" to add a login item and navigate to the "10.33.5.3" shared server, and select the "Public" volume.
+
+(2) Setup an alias, for the "host-file switcher" cmd (note: this will essentially replace your /etc/hosts file -- backup, if you want):
+Add the following to your .profile (or .bashrc, etc...):
+alias h='/Volumes/Public/hosts/gethosts.sh'
+
+How to use it:
+
+> h
+followed by "prd" will restore a default host-file to your machine -- however, it does NOT actually restore your original host file (so backup, if necessary)
+
+on the other hand, if you choose "pre" then visit any site (e.g. admin.insidetech.com:8080), you should notice a red "preview" div in the upper left-hand-side (LHS) of your screen -- mouse-over in order to determine the (SVN-)release running on the preview server...
+
+FYI: add the following alias in order to flush your DNS cache:
+alias f='dscacheutil -flushcache'

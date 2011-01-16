@@ -1,0 +1,5 @@
+git diff vendor/ >~gems.diff
+git apply gems.diff
+
+# for the _correct_ (more robust) way to handle patches
+# see: http://book.git-scm.com/5_git_and_email.html

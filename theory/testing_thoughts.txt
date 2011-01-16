@@ -1,0 +1,7 @@
+don't mock the object you're testing
+don't test each method
+instead, test functionality
+...what should happen (regardless of the particular implementation)
+i.e. Given I have X, when I change Y, I should see Z increase...
+
+Write _that_ test, don't check that 'last50uploads' got called ...instead, check that the file got uploaded.

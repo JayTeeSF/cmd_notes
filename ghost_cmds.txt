@@ -1,0 +1,6 @@
+sudo gem install ghost
+ghost add some.other.domain.com 127.0.0.1
+
+ghost list
+ghost --help
+ghost remove some.other.domain.com

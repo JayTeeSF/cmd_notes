@@ -1,0 +1,30 @@
+rails g scaffold --help
+
+# we could (theoretically) do something like:
+rails generate scaffold playlist title:string owner_id:integer system:boolean --test-framework=rspec
+
+#? --fixture-replacement=factory-girl
+
+# better yet, we should set these as default(s) by uncommenting the config.generators block in application.rb (aka: environment.rb):
+g.test_framework :rspec
+#, :fixture => true
+g.fixture_replacement :factory_girl
+g.fallbacks[ :rspec ] = :test_unit
+
+# re-run: 'rails g scaffold --help',
+# to see if there are additional options required (i.e. for rspec's directory ?!?)
+
+# so now just type:
+rails generate scaffold playlist title:string owner_id:integer system:boolean
+
+# update Gemfile:
+# may need:
+gem 'rails3-generators' #<-- assuming this supports rspec ?!
+
+# FYI: to override the scaffold generated files (e.g. views), try creating a custom:
+#<rails_root>/lib/generators/erb/scaffold/templates/index.html.erb
+
+# rails2
+./script/runner "p Article.first"
+#<Article id: 1, url_title: "home", title: "Home", link_title: "Home", body: nil, textilized_body: "", url: "/", article_type: "footer", updated_at: "2007-05-10 14:36:17", created_at: "2007-05-10 14:36:17", deleted_at: nil, main_cta_type: "none", main_cta_html: nil, right_content_1_type: "none", right_content_1_html: nil, right_content_2_type: "none", right_content_2_html: nil, meta_description: nil, meta_keywords: nil, enable_sitemap: true, page_title: nil, new_window: false>
+

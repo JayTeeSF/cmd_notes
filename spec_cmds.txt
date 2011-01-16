@@ -1,0 +1,9 @@
+cd <rails_root>
+rake spec # takes a long time, but run it to ensure all specs are passing, before making changes...
+
+vi ./spec/factories.rb # add new factory
+ruby -cw ./spec/factories.rb # sanity check whether or not changes broke it
+
+# update/create spec model, check it, and try it in isolation:
+spec ./spec/models/<new_model>_spec.rb
+

@@ -1,0 +1,39 @@
+Configuration
+
+Config the git user info:
+
+git config --global user.name "FirstName LastName" 
+git config --global user.email user@affinitylabs.com
+
+Config the editor to use with git:
+
+git config --global core.editor "mate -w" 
+
+Config color:
+
+git config --global color.sh auto
+git config --global color.status auto
+git config --global color.branch auto
+git config --global color.diff auto
+git config --global color.ui auto
+
+Config the global exclude file that is shared by all projects:
+
+git config core.excludesfile=<path_to_file>
+
+Where <path_to_file> is replaced with the location of the global ignore file. /Users/nbitar/.gitignore on my machine.
+
+Sample content of the global ignore file:
+
+.DS_STORE
+.class
+*~
+*.bak
+*.log
+*.swp
+*.tmproj
+
+Only push the current branch to a branch of the same name
+
+git config --global push.default current
+

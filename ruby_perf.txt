@@ -1,0 +1,11 @@
+require 'perftools'
+PerfTools::CpuProfiler.start("/tmp/filter_chain_profile_long_b")
+
+result = nil
+50.times{ 
+  result = <target_code>
+}
+
+PerfTools::CpuProfiler.stop
+
+return result

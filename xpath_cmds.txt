@@ -1,0 +1,50 @@
+irb> x = Nokogiri::XML("<root><x><y foo='bar'/></x></root>")
+ => xml version"1.0"
+root
+  x
+    y foo"bar"
+  x
+root
+ 
+irb> x.xpath("//y/@foo")
+ => bar
+
+# even better, per: http://www.rhinocerus.net/forum/lang-ruby/600219-using-nokogiri.html
+doc = Nokogiri::HTML.parse(html)
+prefix = '//div[@class="sectionHeaderText"]/following-sibling::'
+xpaths = {
+:name => "#{prefix}b/text()",
+:addr => "#{prefix}text()[2]",
+:citystzip => "#{prefix}text()[3]",
+:country => "#{prefix}text()[4]",
+:phone => "#{prefix}text()[5]",
+}
+xpaths.each do |k,xpath|
+puts "#{k} = " + doc.search(xpath).to_s.strip
+end
+
+# my example:
+def get(url)
+  require 'net/http'
+  require 'uri'
+
+  uri = URI.parse( url )
+  http = Net::HTTP.new(uri.host, uri.port)
+  args = []
+  args << uri.request_uri
+  request = http_method.new(*args)
+  response = http.request(request)
+
+  # check response.code, etc...
+  return response.body
+end
+
+html = get('http://dir.yahoo.com/entertainment/music/artists/by_genre/Jazz')
+doc = Nokogiri::HTML(html)
+doc.encoding = 'utf8'
+xpath = '//div[@class="st"]//ul//li//b/text()'
+results = doc.search(xpath) || []
+
+results.map(&:to_s)
+
+

@@ -1,0 +1,7 @@
+curl -u <user-email>:<pwd> -X GET https://www.pivotaltracker.com/services/v3/tokens/active
+
+<?xml version="1.0" encoding="UTF-8"?>
+<token>
+  <guid>--some-long-alphanum--</guid>
+  <id type="integer">3838</id>
+</token>

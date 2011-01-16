@@ -1,0 +1,23 @@
+force save:
+redis-cli -p 6379 bgsave 
+
+#not sure what 
+redis-cli -p 6379 info
+redis_version:1.2.6
+arch_bits:64
+multiplexing_api:epoll
+uptime_in_seconds:71243
+uptime_in_days:0
+connected_clients:1
+connected_slaves:0
+used_memory:623452
+used_memory_human:608.84K
+changes_since_last_save:85
+bgsave_in_progress:0
+last_save_time:1289864144
+bgrewriteaof_in_progress:0
+total_connections_received:15
+total_commands_processed:282
+role:master
+[root@app91 chemistry.affinitylabs.com]# ps -eafwww | grep 6379
+root      7454  3754  0 11:23 pts/5    00:00:00 grep 6379

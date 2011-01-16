@@ -1,0 +1,21 @@
+class Foo
+  def []=(a,b)
+    puts "hmm a[#{a}] = #{b}"
+  end
+  def [](a)
+    puts "lookup #{a}"
+  end
+end
+# => nil 
+
+f = Foo.new
+# => #<Foo:0x10df600c8> 
+
+f[3]
+# lookup 3
+# => nil 
+
+f[3] = "b"
+# hmm a[3] = b
+#  => "b" 
+

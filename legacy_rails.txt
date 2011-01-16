@@ -1,0 +1,2 @@
+rails -D -d mysql first
+-D for -with_dispatchers
