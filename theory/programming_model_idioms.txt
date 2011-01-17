@@ -1,0 +1,68 @@
+Reactor Pattern:
+@callbacks = {
+  some_event => {:process => &some_callback, :payload => nil, :last_update => Time.now.to_f},
+  other_event => {:process => &other_callback, :payload => nil, :last_update => Time.now.to_f},
+  ...
+}
+
+# register_callbacks_from_other_parts_of_the_system
+
+# libraries need to know to send their events
+# callers need to know how-to connect their code w/ those events
+# i.e. in ruby, pass a block to a method in an abstraction-layer
+# above the library's API
+# this abstraction layer associates api-calls w/ their associated
+# events, and can register the callback w/ the main Reactor
+
+# as soon as an event comes-in each API-abstraction could
+# (A) send a signal to the Reactor,
+# or it could
+# (B) add it's data to the payload of it's callback-entry
+
+# As such the Reactor would either:
+# (A) constantly sleep, until it's awoken
+# (B) constantly loop-through callbacks, looking for payload-updates
+last_update = Time.now.to_f
+while true
+  last_update = this_update
+  this_update = Time.now.to_f
+  @callbacks.each do |event, handler|
+    if handler.last_update != last_update
+      handler.process handler.payload
+    end
+    handler.last_update = this_update
+  end
+end
+
+Finite State Machine Idiom:
+while true
+  case state
+    when state1
+      ...
+    when state2
+      ...
+    else
+    ...
+  end
+end
+
+vs. Stream Programming idioms:
+filter:
+ -> [<any_other_idiom>] ->
+
+pipeline:
+  -> <idiom> -> <idiom> -> <idiom> ->
+
+splitjoin:
+                >[idiom_a]
+               /     \
+  -> splitter -> [idiom_b] -> joiner ->
+               \     /
+                >[idiom_c]
+
+feedback-loop:
+-> joiner ->[idiom] -> [splitter] ->
+    ^                |
+    |                |
+    ______[idiom]_____
+
