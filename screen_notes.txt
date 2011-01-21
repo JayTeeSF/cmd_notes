@@ -1,0 +1,6 @@
+# http://www.rackaid.com/resources/linux-screen-tutorial-and-how-to/
+screen
+<run cmds>
+cntrl a d
+then screen -r 
+# that will either give a list of screens OR resume your screen (if it's the only one)
