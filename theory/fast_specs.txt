@@ -1,0 +1,88 @@
+speed vs. maintainability:
+
+Factory (aka: Factory.create) is slow.(period)
+Factory.build is fast
+using Mock's is fastest -- even avoids minor queries created by Factory.build
+
+However, for the sake of maintainability Factory.build is often my preference 
+Mock is often appropriate for models* w/ simple relationships
+  However, as that model matures/changes/etc your mock may not be testing the right stuff
+
+
+Factory.build however, relies on the work you already put-in to maintain the structure of those models and their relationships
+
+*Note: The rule, of course, is that you never mock the object that is under-test!
+So be sure you're only mocking external dependencies, etc...
+
+# Email Chain on the subject:
+Clarification...
+
+Calling Factory.build(:blah) on a _simple_ model might require a "show fields":
+e.g.
+ree-1.8.7-2010.02 > Factory.build(:partner)
+  Partner Columns (2.4ms)   SHOW FIELDS FROM `partners`
+ => #<Partner id: nil, name: "Partner 1", created_at: nil, updated_at: nil, auto_send: false, show_percentage: 100, offer_dedupe_id: nil, deleted_at: nil, optional: nil, lead_type: "education", popup_extended_description: false, front_end_partner_dedupe: false, note: nil, follow_up_interval: 3, transmitter_id: nil, display_cap: nil, display_cap_timeframe: nil> 
+
+And, of course,  calling build on a complex object will result in inserts for the related-objects:
+e.g.
+ree-1.8.7-2010.02 > Factory.build(:cap)
+  Cap Columns (4.0ms)   SHOW FIELDS FROM `caps`
+  CapAlert Columns (1.2ms)   SHOW FIELDS FROM `cap_alerts`
+  CapFormGroup Columns (1.7ms)   SHOW FIELDS FROM `cap_form_groups`
+  SQL (0.1ms)   BEGIN
+  CapFormGroup Create (0.3ms)   INSERT INTO `cap_form_groups` (`name`, `created_at`, `updated_at`) VALUES('Cap Form Grouping 1', '2010-11-22 19:06:58', '2010-11-22 19:06:58')
+  SQL (0.1ms)   COMMIT
+  CapOfferGroup Columns (1.4ms)   SHOW FIELDS FROM `cap_offer_groups`
+  SQL (0.1ms)   BEGIN
+  CapOfferGroup Create (0.2ms)   INSERT INTO `cap_offer_groups` (`name`, `created_at`, `updated_at`) VALUES('Cap Offer Grouping 1', '2010-11-22 19:06:58', '2010-11-22 19:06:58')
+  SQL (0.1ms)   COMMIT
+ => #<Cap id: nil, cap_offer_group_id: 1225, cap_form_group_id: 76, io_num: nil, prev_id: nil, price: 30.0, begin_date: "2010-11-21", end_date: "2010-12-23", volume: 1000, daily_volume: nil, overage_percentile: 0, max_volume: 1, auto_off_percentile: 100, auto_off_volume: 0, notes: nil, created_at: nil, updated_at: nil, cap_agency_id: nil, cap_agent_id: nil, wday0_volume: -1, wday1_volume: -1, wday2_volume: -1, wday3_volume: -1, wday4_volume: -1, wday5_volume: -1, wday6_volume: -1, customer_number: nil, scrub_rate: nil, billing_number: nil, confirmed_leads: nil, confirmed_revenue: nil, confirmed_date: nil, billing_comments: nil, invoice_number: nil> 
+
+
+
+
+# Me:
+
+Again, I think what you shared has many perfectly good use-cases. I've even used it once or twice. I was simply sharing one (potential) gotcha to that approach.
+
+Yes, DB queries can occur
+
+# Other:
+
+Brittle, maybe. You mentioned that don't make database connection. The problem with build, I think it still queries for database schema I think, yes ... no?
+
+
+
+# Me:
+Good point...
+
+Unfortunately that approach also has the potential to make the tests more brittle -- particularly in a complex system...
+
+For example:
+If one were, to create a test that manually constructs all of the relationships associated with a mock'd Lead or FormAttempt (or SubAward), then any _updates_ to that model (or it's relationships) would not get reflected in future runs of the test.
+
+
+# Other:
+
+This works as well ....
+
+@subaward.stubs(:sub_awards_college_states).returns([ stub(:college_state => "CA"), stub(:college_state => "NY") ])
+
+No need to factory build. Just return mock objects.
+
+
+
+# Me:
+Speed Test Suite:
+How?
+Avoid using the database (pron: ActiveRecord, of course.)
+
+(1) Building your objects (instead of creating them)
+and
+(2) Stub the finder
+
+For example, if I want an instance of FormAttempt, I might use the following pattern:
+  form_attempt_id = 33
+  fa = factory.build(:form_attempt, :id => form_attempt_id)
+  FormAttempt.stubs(:find).with(form_attempt_id).returns(fa)
+

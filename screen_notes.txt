@@ -2,5 +2,12 @@
 screen
 <run cmds>
 cntrl a d
-then screen -r 
-# that will either give a list of screens OR resume your screen (if it's the only one)
+screen -ls 
+# lists available screen sessions
+
+screen -r 
+# will either give a list of screens OR resume your screen (if it's the only one)
+
+# finally, if the screen is already taken (i.e. attached by someone else, i.e. that other terminal that you forgot to disconnect ;-) )
+# share a session w/
+screen -x

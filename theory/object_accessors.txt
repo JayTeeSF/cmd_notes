@@ -1,0 +1,9 @@
+read-only from outside the object
+attr_readers == Good
+attr_accessors == Bad (for anything other than internal-class methods, and/or spec-tests i.e. modifying an object that is not directly being tested)
+
+instead of
+Obj.data = true
+add:
+Obj.activates_data
+...so that future biz-logic updates only need to be added in ONE piece of code: DRY

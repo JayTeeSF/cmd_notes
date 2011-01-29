@@ -1,0 +1,18 @@
+one feature file per feature
+this makes fixing a particular feature easy.
+The contrast is, when you're given:
+FeatureA
+  Given I blah
+  When I bloo
+  Then I blee
+
+And instead of creating a FeatureB file you simply:
+FeatureA
+  Given I Blah
+  When I bloo
+  And I blooblah # feature-B is tested
+  Then I blee
+
+The problem is, if featureA needs to change, you can no longer "freely" modify FeatureA's file
+cuz you don't know which other features are _only_ being tested by through this feature
+...it's tough to tell if the "And I blooblah" line is just cruft ..

@@ -7,7 +7,9 @@ git checkout -b hotfix_2010_q4_01.00 2010_q4_01.00
 # confirm that it worked, by diffing with the tag:
 git diff 2010_q4_01.00
 
-# Cherry pick the commits (from a local topic branch)
+# either work directly on the hotfix branch to resolve issue:
+# OR
+# Cherry pick the commits (from a local topic branch):
 git cherry-pick 158b753428c1bf61efd1322101ecd3eedfe66d85
 
 # make hotfix branch a tracking branch (i.e. accessible from central git-server )

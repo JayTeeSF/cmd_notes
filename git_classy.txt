@@ -1,0 +1,7 @@
+git bundles # better way to share commits
+
+# see which branches you can delete:
+git branch --merged
+
+# see which branches you might have forgotten to merge:
+git branch --no-merged

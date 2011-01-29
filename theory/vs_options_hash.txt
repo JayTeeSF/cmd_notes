@@ -1,0 +1,3 @@
+use multiple methods instead of passing a big options hash
+
+
