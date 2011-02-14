@@ -1,0 +1,4 @@
+on Preview:
+restart mongrels w/o going back to console-menu
+/etc/init.d/mongrel restart chemistry
+

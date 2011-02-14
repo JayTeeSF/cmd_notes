@@ -1,0 +1,4 @@
+-f pretty # for the long formatted output (not just "."'s)
+-t or --tag # for specifying a subset of cukes to run
+e.g.
+cucumber -f pretty --tag @ecpm
