@@ -1,0 +1,86 @@
+// simplest (jquery) approach probably involves:
+// .load, e.g.:
+$('#result').load('ajax/test.html');
+// or
+// $.getScript(), e.g:
+if ($('a.email').length > 0){
+	$.getScript('js/jquery.mailto.js',function(){
+		$('a.email').mailto();
+	});
+}
+// http://www.kevinleary.net/load-external-javascript-jquery-getscript/
+
+
+// STRAIGHT JS:
+
+var scriptID = 'scriptID1';
+loadScript('server.js', scriptID);
+
+/*
+ * concept: http://forums.digitalpoint.com/showthread.php?t=301862
+ */
+function genScript(jsFile, scriptID) {
+    // Create the Script Object
+    var script = document.createElement('script');
+    script.src = jsFile;;
+    script.type = 'text/javascript';
+    script.defer = true;
+    script.id = scriptID;
+    // This will help us in referencing the object later for removal
+    return script;
+}
+
+function loadScript(jsFile, scriptID) {
+    // Insert the created object to the html head element
+    var head = document.getElementsByTagName('head').item(0);
+    var script = genScript(jsFile, scriptID);
+
+    head.appendChild(script);
+}
+
+function unloadScript(scriptID) {
+    var head = document.getElementsByTagName('head').item(0);
+    var old = document.getElementById(scriptID);
+    if (old) head.removeChild(old);
+}
+
+/*
+ * a jquery approach, thanks to:
+ * http://stackoverflow.com/questions/996940/import-javascript-dynamically-with-jquery
+ */
+//sample: widget.js
+function() {
+    this.type = 1;
+    this.color = "red";
+    this.getInfo = function() {
+        return this.color + ' ' + this.type + ' widget';
+    };
+}
+
+// ----
+
+// your framework w/ a widget-framework loader:
+;(function($) {
+  $.fn.loadWidgetFramework = function(callback){
+    var UUID = "widgetUUID";
+    var holdsWidgetUUID = "widgetUUIDValue";
+    window["widgets"] = new Array();
+    $.get("widget.js",
+    function(data) {
+        window["widgets"][holdsWidgetUUID] = eval("(" + data + ")");
+        if (callback) callback();
+    });
+  };
+})(jQuery);
+
+jQuery(document).ready(function() {
+  var callback = function() {
+    $(document).ready(function() {
+      window["widgets"][holdsWidgetUUID] = new(window["widgets"][holdsWidgetUUID])();
+      alert(window["widgets"][holdsWidgetUUID].color);
+      alert(window["widgets"][holdsWidgetUUID].getInfo());
+    });
+  };
+
+  jQuery.fn.loadWidgetFramework(callback);
+}); // end document-ready

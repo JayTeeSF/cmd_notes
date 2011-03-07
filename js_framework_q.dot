@@ -1,0 +1,113 @@
+/*
+ *  dot -Tpng js_framework_q.dot -ojs_framework_q.png
+ *
+ *  concept from:
+ *  http://www.ffnn.nl/pages/articles/media/uml-diagrams-using-graphviz-dot.php
+*/
+digraph x {
+  fontsize = 12
+  node [
+    shape = "record"
+    style="filled"
+    color="black"
+    fillcolor=".7 .3 1.0"
+  ]
+
+  edge [
+    arrowhead = "empty"
+  ]
+
+  // RESOURCES
+  subgraph cluster_resources {
+    style=filled;
+    color=orangered;
+    label="ResourcesDir"
+
+    BaseResource [label="{BaseResource||+ index()\n +show()\n +new()\n +create()\n +edit()\n +update()\n +destroy()\n}"]
+    Question -> BaseResource [label="is_a"]
+    QuestionGroup -> BaseResource [label="is_a"]
+    QuestionGrouping -> BaseResource [label="is_a"]
+
+    //RESOURCE-INSTANCE
+    subgraph cluster_resource_instance {
+      style=filled;
+      color=orange;
+      label="<<ResourceInstance(s)>>"
+
+      Question [fillcolor="green" label="{Question|+ id\n +text|}"]
+      QuestionGroup [fillcolor="green" label="{QuestionGroup|+ id\n +name\n|}"]
+      QuestionGrouping [fillcolor="green" label="{QuestionGrouping|+ id\n +question_id\n +question_group_id|}"]
+
+      QGNote [label="example resource(s)" style="filled" fillcolor="beige"]
+      QuestionGroup -> QGNote [style="dotted" arrowhead="none"]
+      QuestionGrouping -> QGNote [style="dotted" arrowhead="none"]
+      Question -> QGNote [style="dotted" arrowhead="none"]
+
+    }//END-RESOURCE-INSTANCE
+  }//END-RESOURCES
+
+
+  // x-subgraph interactions:
+  QuestionGroupPage -> Question [style="dashed"]
+  QuestionGroupPage -> QuestionGroup [style="dashed"]
+  QuestionGroupPage -> QuestionGrouping [style="dashed"]
+
+  AjaxHelper -> BaseResource [style = dashed]
+  JsLoader -> BasePage [style       = dashed]
+
+
+  // UTILS
+  subgraph cluster_utils {
+    style                             = filled;
+    color                             = orangered;
+    label                             = "UtilsDir"
+    JsLoader [label                   = "{JsLoader|| +loadScript()}"]
+    AjaxHelper [label                 = "{AjaxHelper|| +getJSON()\n +postJSON()\n}"]
+  }
+  //END-UTILS
+
+  // PAGES
+  subgraph cluster_pages {
+    style=filled;
+    color=orangered;
+    label="PagesDir"
+    BasePage [label="{BasePage||+meetsRequirements()\n +loadTriggers()\n +loadRequirements()\n +loadHandlers()}"]
+    QuestionGroupPage -> BasePage [label="is_a"]
+
+
+    // PAGE-INSTANCE
+    subgraph cluster_page_instance {
+      style=filled;
+      color=orange;
+      label="<<PageInstance(s)>>"
+
+      QuestionGroupPage [label="{QuestionGroupPage|| +Question()\n +QuestionGroup()\n +QuestionGrouping()}" fillcolor="green"]
+      QuestionGroupPage -> QGPNote [style="dotted" arrowhead="none"]
+
+      QGPNote
+      QGPNote [label="example of the _one_ script you would include in your HTML" style="filled" fillcolor="yellow" color="red"]
+
+      Rqts [fillcolor="green"]
+      Rqts -> QuestionGroupPage [style="dashed"]
+      Rqts -> RqNote  [style="dotted" arrowhead="none"]
+      RqNote [label="possibly pull from resource validations" style="filled" fillcolor="beige"]
+
+      Triggers [fillcolor="green"]
+      Triggers -> QuestionGroupPage [style="dashed"]
+      Triggers -> TriggerNote [style="dotted" arrowhead="none"]
+      TriggerNote [label="e.g. Tie 'onClicks' to DOM tags" style="filled" fillcolor="beige"]
+
+      Handlers [fillcolor="green"]
+      Handlers -> QuestionGroupPage [style="dashed"]
+      Handlers -> HandlersNote [style="dotted" arrowhead="none"]
+      HandlersNote [label="the event-handler callbacks" style="filled" fillcolor="beige"]
+
+      Templates [fillcolor="green"]
+      Templates -> QuestionGroupPage [style="dashed"]
+      Templates -> TemplatesNote [style="dotted" arrowhead="none"]
+      TemplatesNote [label="UI pieces (might just query server-app views)" style="filled" fillcolor="beige"]
+
+    }// END-PAGE-INSTANCE
+  } //END-PAGES
+
+}

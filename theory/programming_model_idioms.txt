@@ -1,3 +1,11 @@
+map_reduce:
+  ...
+
+controllers (Rails) vs. StepProcessors
+  controllers offer "static-" (predetermined-) flow of control
+whereas
+  StepProcessors (included based on the presence of a widget) offers a non-tech user the ability to control-flow
+
 Reactor Pattern:
 @callbacks = {
   some_event => {:process => &some_callback, :payload => nil, :last_update => Time.now.to_f},

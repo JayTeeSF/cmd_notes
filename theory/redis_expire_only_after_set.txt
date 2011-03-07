@@ -1,0 +1,32 @@
+offer = "foo offer"
+def offer.id; "foo"; end
+tmp_k = RedisDropdownQuestionChoiceFilter.new("o","f").send(:temp_key, 1,offer, 12345)
+RedisDropdownQuestionChoiceFilter.redis.ttl tmp_k
+
+
+##
+> RedisDropdownQuestionChoiceFilter.redis.expire "Foo", 60
+ => false 
+> RedisDropdownQuestionChoiceFilter.redis.ttl "Foo"
+ => -1 
+
+#
+ RedisDropdownQuestionChoiceFilter.redis.set "Foo", "value"
+#=> "OK"
+ RedisDropdownQuestionChoiceFilter.redis.expire "Foo", 60
+#=> true
+ RedisDropdownQuestionChoiceFilter.redis.ttl "Foo"
+#=> 59 
+
+
+# moreover, you can't change an expired key, and expect it to keep counting-down...
+ RedisDropdownQuestionChoiceFilter.redis.set "Foo", "value2"
+ RedisDropdownQuestionChoiceFilter.redis.ttl "Foo"
+
+
+ #   it "should maintain its TTL, even after updating the key's value" do
+ #     temp_key = @filter.send(:temp_key, 1, @offer, 12345)
+ #     redis.set temp_key, "value"
+ #     puts redis.ttl(temp_key)
+ #     redis.ttl(temp_key).should be_close(RedisDropdownQuestionChoiceFilter::ONE_MINUTE, 5)
+ #   end

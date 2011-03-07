@@ -1,0 +1,22 @@
+# http://tbaggery.com/2011/02/07/bundle-while-you-git.html
+# note: this may not be the best approach:
+# Geoffrey Grosenbach [Moderator] 2 weeks ago
+#That looks painful! And only does half the job.
+#
+#There's no shame in stealing a great feature from another open source project. I love the auto-install on boot feature of John Barnette's Isolate.
+#
+#Starting from scratch is as easy as running "rake" (all your dependencies will be installed, old ones removed, etc.). Same thing for continuous test runs: no need to stop watchr or autotest just to install a new gem dependency.
+
+
+#!/bin/sh
+if [ $1 = 0000000000000000000000000000000000000000 ]; then
+  old=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+else
+  old=$1
+fi
+if [ -f Gemfile ] && command -v bundle >/dev/null &&
+  git diff --name-only $old $2 | egrep -q '^Gemfile|\.gemspec$'
+then
+  (unset GIT_DIR; exec bundle) | grep -v '^Using ' | grep -v ' is complete'
+  true
+fi

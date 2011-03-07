@@ -1,0 +1,19 @@
+# Thx to Yahuda's 09-02-2009 "Extending Rails 3" Talk at Pivotal
+
+module SomeConcern
+  def self.append_feature(klass)
+    klass.class_eval do
+      include Dependency
+    end
+
+    super
+
+    klass.class_eval do
+      some_code
+      extend ClassMethods
+    end
+  end
+
+  module ClassMethods
+  end
+end

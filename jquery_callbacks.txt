@@ -1,0 +1,31 @@
+;(function($){
+ $.fn.sayHi = function() {
+   console.log("hi");
+ };
+ 
+ $.fn.helloText = function() {
+   return "hello";
+ };
+ $.fn.worldText = function() {
+   return "world";
+ };
+ $.fn.callbackPrinter = function(callback) {
+   if (callback) console.log(callback());
+ };
+ $.fn.callbackRunner = function(callbacks) {
+   if (callbacks) {
+     $.each(callbacks, function(index, callback){
+       if (callback) callback();
+     });
+   }
+ };
+
+// CALL ME: 
+ $.fn.testCallbackRunner = function() {
+   $.fn.callbackRunner([$.fn.sayHi(),$.fn.callbackPrinter($.fn.helloText), $.fn.callbackPrinter($.fn.worldText)]);
+ };
+})(jQuery);
+
+jQuery(document).ready(function() {
+  jQuery.fn.testCallbackRunner();
+}); // end document-ready

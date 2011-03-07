@@ -1,0 +1,31 @@
+stashing only the non-indexed files:
+
+# On branch 8806_redis_upgrade_upon_rebased_8788
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#modified:   lib/tasks/cucumber.rake
+#
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#modified:   app/models/redis/redis_major_question.rb
+#modified:   addpp/models/redis_dropdown_question_choice_filter.rb
+#modified:   app/services/available_offer_repository.rb
+#
+Dropped refs/stash@{0} (027d0fd3a786e5e05cce7d28e8f47798e00eba14)
+¿jaytee? ~/dev/chemistry[8806_redis_upgrade_upon_rebased_8788*]
+↪ git stash list
+¿jaytee? ~/dev/chemistry[8806_redis_upgrade_upon_rebased_8788*]
+↪ git stash save "flatten failed" --keep-index
+Saved working directory and index state On 8806_redis_upgrade_upon_rebased_8788: flatten failed --keep-index
+HEAD is now at 3fdec55 wip: code updates (and specs) to support new redis-client
+¿jaytee? ~/dev/chemistry[8806_redis_upgrade_upon_rebased_8788]
+↪ git stash list
+stash@{0}: On 8806_redis_upgrade_upon_rebased_8788: flatten failed --keep-index
+¿jaytee? ~/dev/chemistry[8806_redis_upgrade_upon_rebased_8788]
+
+
+Correct way!
+git stash save --keep-index "pretty cucumber"
