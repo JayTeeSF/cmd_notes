@@ -1,0 +1,39 @@
+on our project we're using 'acts_as_paranoid'
+I'm sure it's great ...but because I wasn't the one to feel the pain that caused us to add it, I don't (as of yet) feel so good about it ;-{
+
+In a nutshell, I was writing a spec:
+
+Model.destroy_all (cuz, in a team mtg we discussed -- long ago, how acts_as_paranoid intervenes w/ delete, but not destroy)
+
+And other than that, I don't think about acts_as_paranoid ...till today
+
+I then tried: Model.delete_all
+
+Turns out I needed
+Model.delete_all!
+
+But I'm getting ahead of myself.
+
+Later in the test I did:
+
+boom-4: puts "Model-entries: #{Model.all.map(&:attributes).inspect}" # yes, I was certain there was nothing in the DB!
+boom-3: o = Model.new(:blah...)
+boom-2: puts "valid? " + o.valid? # => true  ...my record was valid!
+boom-1: puts "errors: " + o.errors.to_a.inspect # => [] ...no errors here!
+boom: o.save! # BOOOM! Mysql::Error: Duplicate entry '10004' for key 'PRIMARY': INSERT INTO `models` ...
+
+And, because I was actually performing the previous code inside a block I had to dynamically set the breakpoint (from within the debugger) for the line 'boom-1'
+
+Manually checking what my print statements already told me, of course, didn't help.
+Then, when someone who remembered acts_as_paranoid came along -- cuz, at the time, I had totally forgotten about it's existence -- we tried:
+Model.find_by_deleted(10004)
+...and sure-enough, we found a record.
+The other thing I could have done was to check the database directly ...but, again, I totally forgot about the existence of acts_as_paranoid.
+
+...Another reason to not have late-night coding sessions before work ...and to eat your wheeties every morning ;-)
+
+
+
+
+
+

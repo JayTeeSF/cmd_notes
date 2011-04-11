@@ -1,0 +1,31 @@
+"IF" statements sometimes indicate a code-smell. They can make for a maintenance problem, for example:
+   if size == small 
+     ...
+   else #if size = large
+     ...
+   end
+
+   # followed a few weeks later by:
+   elsif size == medium
+
+   # and then
+   elsif size == medium-large
+
+   # and so on
+
+seeing just _one_ of these if-statements isn't a big deal. The problem is when that pattern happens in multiple locations.
+Then you have to track-down all of those if-statements and add each-extra case...
+
+ …Well, I finally found a "rule" to help identify *which* if-statements are most troublesome (thanks to Refactoring Ruby Edition p32):
+ "It is a bad idea to do a case based on an attribute of another object. If you must use a case statement, it should be on your own data, not on someone else’s."
+The phrase "your own", in that statement, of course, refers to the class (or object) within which the case- or if-statement is located.
+In other words, a class's if-logic or case-logic should operate on it's own internal-data ...not another class's data (see Law of Demeter).
+
+Morever, the example in the book moves a bit of logic from one class to another. In the specific example the method with the case-logic relied on data from two different classes. The author decided which of the two classes should own the method by the following logic:
+  For this to work I had to pass in the length of the rental, which of course is 
+  data from the rental. The method effectively uses two pieces of data, the length 
+  of the rental and the type of the movie. Why do I prefer to pass the length of 
+  rental to the movie rather than the movie type to the rental? It’s because the proposed changes are all about adding new types. Type information generally tends to be more volatile. If I change the movie type, I want the least ripple effect, so I 
+  prefer to calculate the charge within the movie.
+
+

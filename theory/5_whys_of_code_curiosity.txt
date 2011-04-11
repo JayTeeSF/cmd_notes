@@ -1,0 +1,27 @@
+"Hansei*", cried Nadeem, for the umpteenth time.
+(Hansei is Japanese "Lean"-speak for 'self-reflection' -- in our software team's journey toward 'Kaizen' or 'continual improvement'.)
+
+So let's apply some hansei, to an issue, in an attempt to analyze it's root-cause.
+
+(1) Why?
+Because, once again, the team released a poor-quality solution -- due to an obvious misstep.
+
+More specifically, there are two types of display-limits -- spanning a total of 5 limits. Unfortunately, the solution we delivered only addressed one of the two types.
+
+(2) Why?
+We completely forgot about type-2 display-limits.
+
+(3) Why?
+"A Lack of CodeCuriosity", says Nadeem.
+
+(4) Why?
+Because the first line of code in the 100-line file we modified said something to the effect of, "If display_limit_type2 ..."
+
+(Meaning: any programmer who actually took the time to understand (pron: read) the code would recognized the need to address -- or at least *ask about* -- both types of limits.)
+
+(5) Why?
+(digging a bit deeper)
+I realized that when I pair-program, particularly on complex parts of the system, I fall prey to a weakened-sense of responsibility; I trust the assumptions of my co-worker, and challenge them less. What makes this particularly troublesome is that it represents a normal human propensity that undermines pair-programming. (Not necessarily a reason to avoid it, but, certainly something to vigilantly fight-against while pairing.)
+
+
+For more, checkout this article (http://bit.ly/i51aRh) which hypothesizes that those who share responsibility for a task exert less cognitive effort than those who are solely responsible.

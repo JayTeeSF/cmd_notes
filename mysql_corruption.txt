@@ -1,0 +1,31 @@
+My machine crashed and MySQL wouldn't start, i.e.:
+  Starting MySQL
+  .. ERROR! Manager of pid-file quit without updating file.
+
+
+According to Google I should trim-down my /usr/local/etc/my.cnf until I find the problem. But since I knew my issue was one of corruption -- and not some bogus setting -- I just wanted a quick solution (e.g. remove/re-install)
+
+
+Also, because I used brew, to install mysql (yes, mac osx) my "data" directory (unlabeled) was located in:
+  /usr/local/var/mysql
+
+There I found the key file: <hostname>.err
+( Oddity I had many, because DHCP changes (pron: confuses) my system's hostname all the time. Nevertheless...)
+The most recent one said:
+...
+110308  9:57:01  InnoDB: Error: trying to open a table, but could not
+InnoDB: open the tablespace file './chemistry_light/requirement_zips.ibd'!
+InnoDB: Have you moved InnoDB .ibd files around without using the
+InnoDB: commands DISCARD TABLESPACE and IMPORT TABLESPACE?
+InnoDB: It is also possible that this is a temporary table #sql...,
+InnoDB: and MySQL removed the .ibd file for this.
+InnoDB: Please refer to
+InnoDB: http://dev.mysql.com/doc/refman/5.1/en/innodb-troubleshooting-datadict.html
+InnoDB: for how to resolve the issue.
+
+
+So, I just blew-away that chemistry_light directory, and all was well...
+
+...or so I thought!
+Apparently mysql wasn't happy anytime I tried to recreate that database or it's entities (tables, etc)
+http://dev.mysql.com/doc/refman/5.1/en/innodb-troubleshooting-datadict.html

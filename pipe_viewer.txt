@@ -1,0 +1,13 @@
+normal:
+mysql -uroot -ppwd database_name < ./db_file.sql
+
+The 'new' hotness:
+cat ./db_file.sql | pv -cN MYSQL | mysql -uroot database_name -ppwd
+
+The first one makes you wait an indefinite amount of time ...unsure as to whether or not your db is hung.
+The second one, at least, lets you know that something is flowing...
+
+Even better, still:
+time cat ./db_file.sql | pv -cN MYSQL | mysql -uroot database_name -ppwd
+
+...that way you know how long it actually took

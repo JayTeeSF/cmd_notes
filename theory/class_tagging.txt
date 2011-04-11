@@ -1,0 +1,66 @@
+Issue: some Widget(s) were suppose to be rendered in a view
+ However, after modifying the class hierarchy for a subset of said widgets the "view" broke: WTH?
+
+ ( 
+   Caveat:
+   I'm not a fan of using is_a? In my experience it's use indicates chicken-typing*
+   ...which is a problem worthy of it's own remedies.
+   Nevertheless, I found this particular (_probably_ non-root-cause) solution interesting-enough to warrant sharing.
+ )
+
+ Essentially the view-code was relying on the inheritance hierarchy for rendering hints.
+
+ But, according to a co-worker, there is a common pattern from Java for addressing this sort of issue.
+
+ In Ruby the solution might be implemented as follows:
+ create a mixin that serves as a "Tag" (i.e. the view-render's hint)
+ mix it into the desired classes
+ and ...viola, the rendering code doesn't care about the (_formal_) class hierarchy
+
+ In short, any class (or object), that includes the Tag-mixin, will be rendered...
+
+
+Said in code:
+
+ Given:
+   class BlueWidget < Widget
+    ...
+   end
+
+   class RedWidget < Widget
+    ...
+   end
+
+    class Renderer
+     def render(some_widget)
+       do_it if some_widget.is_a?(Widget)
+     end
+  end
+
+But
+ When:
+
+  RedWidget < Monkey
+    ...
+  end
+
+ Then:
+  Renderer.new.render(RedWidget.new) fails to do_it
+
+Therefore:
+
+  module RenderableWidget
+    # no need for any code here
+  end
+
+  class RedWidget < Monkey
+   include RenderableWidget
+   ...
+  end
+
+  class Renderer
+    def render(some_widget)
+      do_it if some_widget.is_a?(RenderableWidget)
+    end
+  end
+

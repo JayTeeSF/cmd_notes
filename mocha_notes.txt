@@ -1,0 +1,8 @@
+want to expect a list of params ...in any order (w/ old version of mocha):
+# note: this may be possible w/ a more condensed notation, I just didn't have time to try that yet:
+
+Model.expects(:find).with(all_of(*@model_instance_ids.map{|i| includes(i)})).at_least_once.returns(@model_instance_vals)
+
+The above says:
+I'm expecting the code_under_test to call "Model.find" and pass it an array of ids (in any order)
+The result, is to return my list of model_instance_values (which are likely "mocks")

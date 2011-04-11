@@ -23,6 +23,11 @@ RedisDropdownQuestionChoiceFilter.redis.ttl tmp_k
  RedisDropdownQuestionChoiceFilter.redis.set "Foo", "value2"
  RedisDropdownQuestionChoiceFilter.redis.ttl "Foo"
 
+# spec for sinter & sunion
+test tmpzip has expiry...
+filter method
+
+
 
  #   it "should maintain its TTL, even after updating the key's value" do
  #     temp_key = @filter.send(:temp_key, 1, @offer, 12345)

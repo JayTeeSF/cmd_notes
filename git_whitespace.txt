@@ -1,0 +1,4 @@
+git show --ignore-space-at-eol
+or
+git show <some-sha> --ignore-space-at-eol
+
