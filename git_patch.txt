@@ -1,0 +1,18 @@
+checkout master
+checkout -b <some_new_branch>
+make your changes
+commit your changes
+create your patch: 
+  git format-patch master --stdout > some_new_changes.patch
+
+send your patch --whereever
+review your patch: 
+  git apply --stat some_new_changes.patch
+
+check your patch:
+  git apply --check some_new_changes.patch
+
+apply your patch (w/ signoff):
+  git am --signoff < some_new_changes.patch
+
+# special thx to: http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
