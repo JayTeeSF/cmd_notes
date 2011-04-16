@@ -23,6 +23,7 @@ class GemInstallCommander
   end
 
   def installed_gems
+    return [] unless gem_list
     gem_list.reject do |gem_line|
       gem_line[/^\s*\*/] || !gem_line[/\(\d+/]
     end.map(&:strip!)
@@ -45,23 +46,23 @@ class GemInstallCommander
 
   def gen_install_cmds
     # puts required_gemset.to_install_cmds
-    gems_to_install.each do |meta_gem|
+    gems_to_install.collect do |meta_gem|
       # puts "meta_gem_class: #{meta_gem.class}; #{meta_gem.inspect}"
-      puts meta_gem.to_install_cmd
+      meta_gem.to_install_cmd
     end
   end
 
   def gems_to_install
-    required_gemset - installed_gemset
+    @gems_to_install ||= required_gemset - installed_gemset
   end
 
   def gems_to_uninstall
-    installed_gemset - required_gemset
+    @gems_to_uninstall ||= installed_gemset - required_gemset
   end
 
   def gen_uninstall_cmds
-    gems_to_uninstall.each do |meta_gem|
-      puts meta_gem.to_uninstall_cmd
+    gems_to_uninstall.collect do |meta_gem|
+      meta_gem.to_uninstall_cmd
     end
   end
 
@@ -79,7 +80,7 @@ class GemSet
           MetaGem.new(name, version)
         end.flatten
       end
-      p @meta_gems.inspect
+      # p @meta_gems.inspect
     end
   end
 
@@ -104,7 +105,7 @@ class MetaGem
   end
 
   def to_uninstall_cmd
-    "gem uninstall #{@name} -v '#{@version}'"
+    "gem uninstall #{@name} -v '#{@version}';"
   end
 
   def ==(other)
@@ -112,7 +113,7 @@ class MetaGem
   end
 
   def to_install_cmd
-    "gem install #{@name} -v '#{@version}'"
+    "gem install #{@name} -v '#{@version}';" # doesn't handle :require => ... or :lib ...
   end
 end
 
@@ -236,6 +237,5 @@ class GemInstallCommander
   include ChemistryGems
 end
 
-GemInstallCommander.new.gen_install_cmds
-GemInstallCommander.new.gen_uninstall_cmds
-
+puts GemInstallCommander.new.gen_uninstall_cmds
+puts GemInstallCommander.new.gen_install_cmds
