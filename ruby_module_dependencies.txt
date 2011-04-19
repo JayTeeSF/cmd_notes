@@ -1,7 +1,8 @@
-# Thx to Yahuda's 09-02-2009 "Extending Rails 3" Talk at Pivotal
+# Thx to Yehuda's 09-02-2009 "Extending Rails 3" Talk at Pivotal
+# this file includes hook-method correction(s)
 
 module SomeConcern
-  def self.append_feature(klass)
+  def self.append_features(klass)
     klass.class_eval do
       include Dependency
     end
