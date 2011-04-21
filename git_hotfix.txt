@@ -1,3 +1,6 @@
+# ensure repo is upto-date:
+git fetch origin
+
 # find the latest tag (either in chemistry-campfire room or via the tags)
 git tag
 

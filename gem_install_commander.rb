@@ -237,5 +237,22 @@ class GemInstallCommander
   include ChemistryGems
 end
 
-puts GemInstallCommander.new.gen_uninstall_cmds
-puts GemInstallCommander.new.gen_install_cmds
+puts
+to_uninstall = GemInstallCommander.new.gen_uninstall_cmds
+if !to_uninstall.empty? 
+  puts "please uninstall the following gems:"
+  puts to_uninstall
+else
+  puts "you have no gems to uninstall"
+end
+puts
+
+puts
+to_install = GemInstallCommander.new.gen_install_cmds
+if !to_install.empty? 
+  puts "please install the following gems:"
+  puts to_install
+else
+  puts "you have no gems to install"
+end
+puts
