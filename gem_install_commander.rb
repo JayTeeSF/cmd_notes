@@ -233,8 +233,48 @@ module ChemistryGems
   end
 end
 
+module ChemistryVendoredGemsPlus
+  def self.append_features(base)
+    base.class_eval do
+      include ChemistryGems
+    end
+
+    base.extend ClassMethods
+  end
+  module ClassMethods
+
+  def vendored_rails_gem
+    {'rails' => ['2.3.5']}
+  end
+
+  def vendored_gems
+    [
+      vendored_rails_gem,
+      {'addressable' => ['2.1.2']},
+      {'calendar_date_select' => ['1.15']},
+      {'hoptoad_notifier' => ['2.4.8']},
+      {'json' => ['1.4.6']},
+      {'mustache' => ['0.12.0']},
+      {'newrelic_rpm' => ['2.9.5']},
+      {'rack' => ['1.0.1']},
+      {'redis' => ['2.1.1']},
+      {'redis-namespace' => ['0.8.0']},
+      {'resque' => ['1.10.0']},
+      {'rspec' => ['1.3.0']},
+      {'ruby-progressbar' => ['0.0.9']},
+      {'sinatra' => ['1.0']},
+      {'vegas' => ['0.1.8']},
+    ]
+  end
+
+  def canonical_gem_hash_array
+    super + vendored_gems 
+  end
+end
+end
+
 class GemInstallCommander
-  include ChemistryGems
+  include ChemistryVendoredGemsPlus
 end
 
 puts
