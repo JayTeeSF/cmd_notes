@@ -1,0 +1,3 @@
+# http://help.github.com/remotes/
+git push origin :branchname
+

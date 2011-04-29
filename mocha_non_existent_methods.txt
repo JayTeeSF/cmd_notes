@@ -1,0 +1,17 @@
+# instead of:
+@form_attempt.offer_selections.expects(:find_by_offer_id).with(1).returns(nil)
+@form_attempt.offer_selections.expects(:find_by_offer_id).with(3).returns(@offer_3)
+# ...etc
+
+# Try some Ruby-Fu:
+# (WARNING: injecting variable's into your objects is ...well, dangerous
+# it pollutes the namespace of the object your mocking ...which, hopefully
+# isn't the object under-test)
+
+mock_offer_hash = {1 => nil, 2 => nil, 3 => @offer_3, 4 => nil, 5 => @offer_5}
+@form_attempt.offer_selections.instance_variable_set("@mock_offer_hash", mock_offer_hash)
+class << @form_attempt.offer_selections
+  def find_by_offer_id(id, *args)
+    self.instance_variable_get("@mock_offer_hash")[id]
+  end
+end

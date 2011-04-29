@@ -3,8 +3,8 @@
 class GemInstallCommander
   attr_reader :gem_list
 
-  def initialize(gem_list=%x{gem list})
-    @gem_list = gem_list
+  def initialize(gem_list=nil)
+    @gem_list = gem_list || %x{gem list}
   end
 
   def self.canonical_gem_hash_array
@@ -273,12 +273,109 @@ module ChemistryVendoredGemsPlus
 end
 end
 
+module InstalledGems
+  extend self
+  def gem_list
+    list =<<-EOL
+    activemodel (3.0.0)
+    activerecord (3.0.0)
+    activesupport (3.0.0, 2.3.8)
+    arel (1.0.1)
+    arrayfields (4.7.4)
+    builder (2.1.2)
+    capybara (0.4.1.1)
+    capybara-envjs (0.4.0)
+    celerity (0.8.7)
+    childprocess (0.1.6)
+    chronic (0.2.3)
+    churn (0.0.12)
+    columnize (0.3.1)
+    cucumber (0.10.0, 0.8.5)
+    cucumber-rails (0.3.2, 0.3.1)
+    culerity (0.2.15)
+    database_cleaner (0.5.2)
+    delorean (0.2.0)
+    diff-lcs (1.1.2)
+    envjs (0.3.8)
+    factory_girl (1.3.2)
+    fastercsv (1.5.3)
+    fattr (2.1.0)
+    ffi (0.6.3)
+    flay (1.4.0)
+    flog (2.4.0)
+    gherkin (2.3.3, 2.1.5)
+    gpgme (1.0.8)
+    hirb (0.3.3)
+    hoe (2.6.1)
+    httpclient (2.1.5.2)
+    i18n (0.4.1)
+    jasmine (1.0.1.1)
+    johnson (2.0.0.pre3)
+    json (1.4.6)
+    json_pure (1.4.6)
+    linecache (0.43)
+    main (4.2.0)
+    metric_fu (1.5.1)
+    mime-types (1.16)
+    mocha (0.9.8)
+    mysql (2.8.1)
+    net-scp (1.0.2)
+    net-sftp (2.0.4)
+    net-ssh (2.0.23)
+    no_peeping_toms (1.1.0)
+    nokogiri (1.4.3.1)
+    rack (1.2.1)
+    rack-test (0.5.4)
+    rails_best_practices (0.4.0)
+    rake (0.8.7)
+    rcov (0.9.8)
+    RedCloth (4.2.3)
+    reek (1.2.8)
+    rjb (1.2.6)
+    roodi (2.1.0)
+    rspec (1.3.0)
+    rspec-core (2.5.1)
+    rspec-expectations (2.5.0)
+    rspec-mocks (2.5.0)
+    rspec-rails (1.3.2)
+    ruby-debug (0.10.3)
+    ruby-debug-base (0.10.3)
+    ruby2ruby (1.2.4)
+    ruby_parser (2.0.4)
+    rubyforge (2.0.4)
+    rubyzip (0.9.4)
+    rufus-tokyo (1.0.7)
+    Saikuro (1.1.0)
+    selenium-client (1.2.18)
+    selenium-rc (2.2.4)
+    selenium-webdriver (0.1.2)
+    sexp_processor (3.0.4)
+    sham_rack (1.3.2)
+    soap4r (1.5.8)
+    stackdeck (0.2.0)
+    SystemTimer (1.2.2)
+    term-ansicolor (1.0.5)
+    test-spec (0.10.0)
+    trollop (1.16.2)
+    tzinfo (0.3.23)
+    webrat (0.7.1)
+    xpath (0.1.3)
+    yajl-ruby (0.7.7)
+    EOL
+  end
+end
+
 class GemInstallCommander
   include ChemistryVendoredGemsPlus
 end
 
+gems = nil
+
+# HAL:
+gems = InstalledGems.gem_list
+
 puts
-to_uninstall = GemInstallCommander.new.gen_uninstall_cmds
+to_uninstall = GemInstallCommander.new(gems).gen_uninstall_cmds
 if !to_uninstall.empty? 
   puts "please uninstall the following gems:"
   puts to_uninstall
@@ -288,7 +385,7 @@ end
 puts
 
 puts
-to_install = GemInstallCommander.new.gen_install_cmds
+to_install = GemInstallCommander.new(gems).gen_install_cmds
 if !to_install.empty? 
   puts "please install the following gems:"
   puts to_install
