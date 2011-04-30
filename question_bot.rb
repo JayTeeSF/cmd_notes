@@ -277,8 +277,8 @@ case ARGV[0]
     and
     (d) chmod +x the file and run it again, as:
         #{$0} do_it
-        
-    If you don't specify any options, it runs in a (local) test-mode
+
+    Note: if you run it without any options, it will run in an interactive cmdline (test) mode.
     EOM
   else
     Bot.new.test
