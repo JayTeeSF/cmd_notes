@@ -163,7 +163,7 @@ module ChemistryGems
         {'haml' => ['3.0.25']},
         {'hirb' => ['0.4.0']},
         {'httpclient' => ['2.1.6.1']},
-        {'i18n' => ['0.5.0']},
+        {'i18n' => ['0.4.1']},
         {'jasmine' => ['1.0.1.1']},
         {'johnson' => ['2.0.0.pre3']},
         {'json' => ['1.4.6']},
@@ -372,7 +372,7 @@ end
 gems = nil
 
 # HAL:
-gems = InstalledGems.gem_list
+#gems = InstalledGems.gem_list
 
 puts
 to_uninstall = GemInstallCommander.new(gems).gen_uninstall_cmds
