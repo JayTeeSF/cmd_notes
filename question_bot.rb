@@ -185,7 +185,7 @@ end
 class Bot
   include BotCommander
   include SecureSettings
-  QUIT_CMDS = ['quit', 'exit']
+  QUIT_CMDS = ['quit', 'exit', 'Exit', 'Quit']
 
   attr_reader :user, :authorized, :pwd
   private :pwd
@@ -255,4 +255,31 @@ class Bot
 end
 
 # do_it...
-('do_it' == ARGV[0]) ?  Bot.new.start : Bot.new.test
+case ARGV[0]
+  when 'do_it'
+    Bot.new.start
+  when '--help'
+    puts <<-EOM
+    to run this bot:
+    (a) gem install net-toc
+
+    (b) setup at least 2 AIM account(s):
+        o one for this BOT
+        o (at least) one from which to control this BOT
+
+    (c) Create your own #{ENV['HOME']}/bin/secure_settings.rb file, e.g.:
+        module SecureSettings
+          AUTHORIZED = ["your_AIM_screen_name"].freeze
+          USER='AIM_screen_name_for_your_bot'.freeze
+          PWD='AIM_pwd_for_your_bot'.freeze
+        end
+
+    and
+    (d) chmod +x the file and run it again, as:
+        #{$0} do_it
+        
+    If you don't specify any options, it runs in a (local) test-mode
+    EOM
+  else
+    Bot.new.test
+end
