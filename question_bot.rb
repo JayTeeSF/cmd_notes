@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'fileutils'
 require 'rubygems'
 require 'net/toc'
 require ENV["HOME"] + "/bin/secure_settings.rb"
@@ -10,8 +11,8 @@ class GitRepo
 
   attr_reader :base_path, :name, :working_dir, :index
 
-  def initialize( _name, _base_path=DEFAULT_BASE_PATH )
-    @base_path = _base_path
+  def initialize( _name, _base_path=nil )
+    @base_path = _base_path || DEFAULT_BASE_PATH
     @name = _name
     @working_dir = "#{base_path}/#{name}"
     @index = "#{base_path}/#{name}/.git"
@@ -19,6 +20,7 @@ class GitRepo
 
   def init
     unless File.exists?(index)
+      FileUtils.mkdir_p base_path
       Dir.chdir base_path
       %x/git init #{name}/
     end
@@ -56,6 +58,8 @@ class GitRepo
 end
 
 module BotCommander
+  extend self
+
   OPEN_QTYPE = "open"
   CLOSE_QTYPE = "closed"
   ALL_QTYPE = "all"
@@ -64,9 +68,9 @@ module BotCommander
   FILE_SUFFIX = "qst"
   DEFAULT_OPEN_FILTERS = {:id => "*", :owner => "*", :type => OPEN_QTYPE}.freeze
   QUESTION_PREFIX = "Hmm..."
-  ANSWER_PREFIX = "One Answer is:"
+  ANSWER_PREFIX = "How about:"
   RESPONDENT_PREFIX = "...says,"
-  AUTHOR_PREFIX = "...asks,"
+  AUTHOR_PREFIX = "...wonders,"
   OWNER_PREFIX = "_by_"
 
   MINE = "mine"
@@ -91,8 +95,8 @@ module BotCommander
   CLOSED_OK = "closed."
   REGISTERED_OK = "hold that thought."
 
-  def init
-    @db = GitRepo.new("questions_db")
+  def init(base_path=nil)
+    @db = GitRepo.new("questions_db", base_path)
     @db.init
     @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{FILE_SUFFIX}"].count
   end
@@ -181,12 +185,11 @@ module BotCommander
       debug { "fv: #{first_val.inspect}; sv: #{second_val.inspect}; tv: #{third_val}" }
       if (first_val[/^\d+$/])
         filters[:id] = first_val
-        ans = second_val
       else
         q_type = first_val
         whose = (MINE == second_val) ? owner : second_val
-        ans = (third_val || ANSWERS_TOO == second_val) ? true : false
       end
+      ans = (third_val || ANSWERS_TOO == second_val) ? true : false
       filters[:answers_too] = ans
       filters[:owner] = sanitize_filename(whose) if authorized.member?(whose)
       filters[:type] = (Q_TYPES - [ALL_QTYPE]).member?(q_type) ? q_type : "*"
@@ -340,24 +343,39 @@ class Bot
     @verbose = verbose
   end
 
-  def test
-    init
-    buddy = prompt BUDDY_PROMPT
+  # options:
+  #  :one_time => T/F
+  #  :base_path => /location/of/db
+  def test(buddy=nil, message=nil, options={})
+    init(options[:base_path])
+    buddy ||= prompt BUDDY_PROMPT
     if authorized.member? buddy
+      result = nil
       begin
-        message = strip_html( prompt(MESSAGE_PROMPT) )
-        begin
-          process(message, buddy) do |line|
-            debug { "send_im: #{add_html(line)}" }
-            puts "send_im: #{line}" unless verbose?
+        message = options[:one_time] ? strip_html( message ) : strip_html( prompt(MESSAGE_PROMPT) ) 
+        result = process(message, buddy) do |line|
+          line.tap do |msg|
+            if verbose?
+              msg = add_html(msg)
+              debug { "send_im: #{add_html(msg)}" }
+            else
+              puts "send_im: #{msg}" unless options[:one_time]
+            end
+            puts
           end
-        rescue Exception => e
-          puts handle(e, message)
         end
-        puts
-      end while true
+      rescue Exception => e
+        handle(e, message).tap do |msg|
+          puts msg
+          puts
+        end
+      end until options[:one_time]
+      result
     else
-      puts IGNORE_MESSAGE
+      IGNORE_MESSAGE.tap do |msg|
+        puts msg
+        puts
+      end
     end
   end
 
@@ -390,15 +408,14 @@ class Bot
     exit if exit?(message)
     if run_pre_cmd(message)
       line = verbose? ? "QUIET MODE: off" : "QUIET MODE: on"
-      yield line if block_given?
-      return
+      return yield line if block_given?
     end
     result = super(message, screen_name)
     # puts "result: #{result.inspect}"
     result.each do |lines|
       # puts "lines: #{lines.inspect}"
       if lines.is_a? Array
-        lines.each do |line|
+        lines.collect do |line|
           line.to_s! if line.respond_to?(:to_s!)
           yield line if block_given?
         end
