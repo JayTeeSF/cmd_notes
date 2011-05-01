@@ -56,27 +56,41 @@ class GitRepo
 end
 
 module BotCommander
-  OPEN = "open"
-  CLOSE = "close"
-  Q_TYPES = [OPEN, CLOSE]
+  OPEN_QTYPE = "open"
+  CLOSE_QTYPE = "close"
+  ALL_QTYPE = "all"
+  Q_TYPES = [OPEN_QTYPE, CLOSE_QTYPE, ALL_QTYPE]
 
   QUESTION_FILE_SUFFIX = "qst"
-  DEFAULT_OPEN_FILTERS = {:id => "*", :owner => "*", :type => OPEN}.freeze
-  QUESTION_PREFIX = "Question:"
-  AUTHOR_PREFIX = "Author:"
+  DEFAULT_OPEN_FILTERS = {:id => "*", :owner => "*", :type => OPEN_QTYPE}.freeze
+  QUESTION_PREFIX = "Hmm..."
+  ANSWER_PREFIX = "One Answer is:"
+  RESPONDENT_PREFIX = "...says,"
+  AUTHOR_PREFIX = "...asks,"
+  OWNER_PREFIX = "_by_"
+
   MINE = "mine"
 
   HELP_CMD = "help"
   LIST_CMD = "list"
+  ANSWER_CMD = "answer"
   REGISTER_CMD = "register"
   SHOW_CMD = "show"
-  UNKNOWN_CMD = 'Unknown cmd'
+  CLOSE_CMD = "close"
+  UNKNOWN_CMD = "Unknown cmd"
+  ANSWERS_TOO = "ans"
 
   HTML_TAB = "&nbsp;&nbsp;&nbsp;"
   HTML_GT = "&gt;"
   HTML_LT = "&lt;"
 
   SPECIAL_CHAR_REPLACEMENT = '_'
+
+  UNKNOWN_QUESTION_ERROR = "Unknown Question"
+  NO_QUESTIONS_FOUND = "No Questions"
+
+  CLOSED_OK = "closed."
+  REGISTERED_OK = "got it."
 
   def init
     @db = GitRepo.new("questions_db")
@@ -89,69 +103,165 @@ module BotCommander
   #   :owner => ...
   #   :type => ...
   def list_questions filters={}
-    question_files(filters).map do |filename|
-      just_the_name(filename) + " => " + extract_question(filename)
-    end
-  end
+    files = question_files(filters)
+    results = files.map do |filename|
+      _id_and_descr = id_and_description filename
+      debug { filters[:answers_too] ? "filters TOO" : "NO FILTERS" }
+      # question = extract_question(filename, filters[:answers_too])
+      # _id_and_descr && question ? _id_and_descr + " => " + question : nil
+      
+      questions = extract_questions(filename, filters[:answers_too])
 
-  def show_question filters={}
-    filename = question_files(filters).first
-    [extract_question(filename)]
+      unless _id_and_descr || questions
+        nil
+      else
+        [_id_and_descr + " => " + questions.first] +        
+        questions[1..-1].collect do |question|
+          "\t => " + question
+        end
+    end
+    end.compact
+    return results.empty? ? [NO_QUESTIONS_FOUND] : results
+  end
+  alias :show_question :list_questions
+
+  # FIXED: when DB is empty:
+  # message: show 2
+  #
+  # TypeError: Coercion error: nil.to_str => String failed
+  # def show_question filters={}
+  #   filename = question_files(filters).first
+  #   [extract_question(filename, filters[:answers_too]) || ""]
+  # rescue TypeError => e
+  #   return [NO_QUESTIONS_FOUND]
+  # end
+
+  def close_question filters={}
+    file_path = question_files(filters).first
+    return [UNKNOWN_QUESTION_ERROR] unless file_path
+
+    destination_dir = @db.destination_dir(CLOSE_QTYPE)
+    unless File.exists?(destination_dir)
+      Dir.chdir @db.working_dir
+      Dir.mkdir CLOSE_QTYPE
+    end
+    destination_file = File.basename(file_path)
+    destination_path = File.join(destination_dir, destination_file)
+    File.rename file_path, destination_path #FIXME: make @db responsible for file mgmt
+
+    @db.commit(destination_file, CLOSE_QTYPE)
+    [CLOSED_OK]
   end
 
   def register_question question, owner
-   filename = sanitize_filename("#{next_question_id}_by_#{owner}.#{QUESTION_FILE_SUFFIX}")
-   puts "storing the following question: #{question} in #{filename}..."
+   filename = sanitize_filename("#{next_question_id}#{OWNER_PREFIX}#{owner}.#{QUESTION_FILE_SUFFIX}")
+   debug { "storing the following question: #{question} in #{filename}..." }
    open_question(filename, {:question => question, :author => owner})
-   ["ok"]
+   [REGISTERED_OK]
   end
 
-  def open_question filename, content
-    unless File.exists?(file_dir(OPEN))
-      Dir.chdir @db.working_dir
-      Dir.mkdir OPEN
-    end
-    File.open(file_path(filename, OPEN), "w") do |f|
-      f.puts "#{QUESTION_PREFIX} #{content[:question]}"
-      f.puts "#{AUTHOR_PREFIX} #{content[:author]}"
-    end
-    @db.commit(filename, OPEN)
-    incr
-  end
+  # FIXED: when DB is empty:
+  # message: answer: 1 an answer is.
+  # storing the following answer: an answer is. in ...
+  # NoMethodError: undefined method `each' on false:FalseClass.
+  #
+  # BUG2:
+  # storing the following answer: an answer is. in /tmp/questions_db/open/2_by_jayteework.qst...
+  # Errno::ENOENT: No such file or directory -
+  # /tmp/questions_db/open//tmp/questions_db/open/2_by_jayteework.qst
+  #
+  def answer_question answer, author, filters={}
+    # answer even closed questions (?!)
+    filename = question_files({:type => "*"}.merge(filters)).first
+    return [UNKNOWN_QUESTION_ERROR] unless filename
 
-  def append_answer_to_file filename, content
-    raise NotImplementedError, "Coming Soon..."
+    debug { "storing the following answer: #{answer} in #{filename}..." }
+    append_answer_to_file(filename, {:answer => answer, :author => author})
   end
 
   # returns an array of messages to reply with
   def process cmd, owner
-    debug { "got: cmd: #{cmd} by owner: #{owner}" }
+    debug { "got: #{cmd} from: #{owner}" }
     filters = {}
 
     case cmd
     when /^#{HELP_CMD}\s*$/i
       cmd_info
-    when /^#{REGISTER_CMD}\:\s+([^\?]+\?)/i
-     register_question($1, owner)
-    when /^#{LIST_CMD}(?:\s*|\:\s+([\w]+)(?:|\s+([\w]+)))\s*$/i
-     whose = $1; q_type = $2
-     filters[:type] = q_type if Q_TYPES.member?(q_type)
-     if whose == MINE
-       filters[:owner] = sanitize_filename owner
-     elsif authorized.member?(whose)
-       filters[:owner] = sanitize_filename whose
-     end
 
+    when /^(?:|#{REGISTER_CMD})(?:|\:\s+)\s*([^\?]+\?)\s*$/i
+      question = $1
+      register_question(question, owner)
+
+    when /^(?:|#{ANSWER_CMD})(?:|\:\s+)\s*([\d]+)\s+(.+\.)\s*$/i
+      filters[:id] = $1; answer = $2
+      answer_question answer, owner, filters
+
+    # TODO: merge LIST & SHOW cmds...
+    when /^#{LIST_CMD}(?:|\:)(?:|\s+([\w]+)(?:|\s+([\w]+)))\s*$/i
+      q_type = $1; whose = $2
+      if Q_TYPES.member?(q_type)
+        filters[:type] = (q_type == ALL_QTYPE) ? "*" : q_type
+      end
+      whose = (MINE == whose) ? owner : whose
+      filters[:owner] = sanitize_filename(whose) if authorized.member?(whose)
      list_questions filters
-    when /^#{SHOW_CMD}(?:|\:)\s+([\d]+)\s*$/i
-      filters[:id] = $1
+
+    when /^#{SHOW_CMD}(?:|\:)\s+([\d]+|[\w]+)(?:|\s+(#{ANSWERS_TOO}))\s*$/i
+      first_val = $1; ans = $2
+      debug { "fv: #{first_val.inspect}; ans: #{ans.inspect}" }
+      (first_val[/^\d+$/]) ? filters[:id] = first_val : q_type = first_val
+      filters[:answers_too] = true unless ans.nil? || ans.empty?
+      filters[:type] = (Q_TYPES - [ALL_QTYPE]).member?(q_type) ? q_type : "*"
       show_question filters
+
+    when /^#{CLOSE_CMD}(?:|\:)\s+([\d]+)/i
+      filters[:id] = $1
+      close_question filters
+
     else
       [UNKNOWN_CMD]
+
     end
   end
 
   protected
+
+  def open_question filename, content
+    unless File.exists?(file_dir(OPEN_QTYPE))
+      Dir.chdir @db.working_dir
+      Dir.mkdir OPEN_QTYPE
+    end
+    File.open(file_path(filename, OPEN_QTYPE), "w") do |f|
+      f.puts "#{QUESTION_PREFIX} #{content[:question]} #{AUTHOR_PREFIX} #{content[:author]}"
+    end
+    @db.commit(filename, OPEN_QTYPE)
+    incr
+  end
+
+  def append_answer_to_file filename, content
+    return [UNKNOWN_QUESTION_ERROR] unless File.exists?(filename)
+    File.open(filename, "a") do |f|
+      f.puts "#{ANSWER_PREFIX} #{content[:answer]} #{RESPONDENT_PREFIX} #{content[:author]}"
+    end
+    @db.commit(*file_and_sub_dir(filename))
+    
+  end
+
+  def file_and_sub_dir(fullpath)
+    file_and_sub_dir_ary = [File.basename(fullpath)]
+
+    case File.dirname(fullpath)
+    when file_dir(OPEN_QTYPE)
+      file_and_sub_dir_ary << OPEN_QTYPE
+
+    when file_dir(CLOSE_QTYPE)
+      file_and_sub_dir_ary << CLOSE_QTYPE
+
+    else
+      raise RuntimeError, "Unknown File Path: #{File.dirname(fullpath).inspect} vs. #{file_dir(OPEN_QTYPE)} "
+
+    end
+  end
 
   # TODO: create a Message Class that encapsulates & handles all of this...
   def add_html message
@@ -170,7 +280,11 @@ module BotCommander
 
   private
 
-  def just_the_name(filename)
+  def id_and_description filename
+    file_basename_without_extension(filename).sub(/#{OWNER_PREFIX}.*$/, "")
+  end
+
+  def file_basename_without_extension(filename)
     File.basename(filename, File.extname(File.basename(filename)))
   end
   def replace_special_chars(str)
@@ -187,24 +301,33 @@ module BotCommander
     [
       HELP_CMD,
       "#{REGISTER_CMD}: some question?",
-      "#{LIST_CMD}|#{LIST_CMD}: <owner>|#{LIST_CMD}: <owner> <q_type>",
-      "#{SHOW_CMD}: <id>",
-      "\t<owner>: #{MINE} | #{authorized.join(" | ")}",
-      "\t<q_type>: #{Q_TYPES.join(" | ")}"
+      "#{LIST_CMD}|#{LIST_CMD}: <q_type>|#{LIST_CMD}: <q_type> <owner>",
+      "#{SHOW_CMD}: <id>|#{SHOW_CMD}: all|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: all #{ANSWERS_TOO}",
+      "#{ANSWER_CMD}: <id> an answer is.",
+      "#{CLOSE_CMD}: <id>",
+      "\t<q_type>: #{Q_TYPES.join(" | ")}",
+      "\t<owner>: #{MINE} | #{authorized.join(" | ")}"
     ]
   end
 
   def question_files filters={}
     filters = DEFAULT_OPEN_FILTERS.merge(filters)
-    Dir[file_path(filters[:id] + "_by_#{filters[:owner]}.#{QUESTION_FILE_SUFFIX}", filters[:type])]
+    debug { "w/ filters: #{filters.inspect}" }
+    Dir[file_path(filters[:id] + "#{OWNER_PREFIX}#{filters[:owner]}.#{QUESTION_FILE_SUFFIX}", filters[:type])]
   end
 
-  def extract_question filename
-    (File.open(filename).find &match_question).chomp
+  def extract_questions filename, answers_too=false
+    l = match_question(answers_too)
+    # (File.open(filename).find &l).tap do |question|
+    (File.open(filename).select &l).collect do |question|
+      question.chomp! if question.respond_to?(:chomp!)
+    end
   end
 
-  def match_question 
-    lambda {|line| line =~ /^#{QUESTION_PREFIX}/ }
+  def match_question(answers_too=false)
+    regex = QUESTION_PREFIX
+    regex += "|#{ANSWER_PREFIX}" if answers_too
+    lambda {|line| line =~ /^(?:#{regex})/ }
   end
 
   def incr
@@ -249,8 +372,8 @@ class Bot
         message = strip_html( prompt(MESSAGE_PROMPT) )
         begin
           process(message, buddy) do |line|
-            # puts "send_im: #{add_html(line)}"
-            puts "send_im: #{line}"
+            debug { "send_im: #{add_html(line)}" }
+            puts "send_im: #{line}" unless verbose?
           end
         rescue Exception => e
           puts handle(e, message)
@@ -281,26 +404,51 @@ class Bot
         buddy.send_im add_html(IGNORE_MESSAGE)
       end
     end
-    puts "result: #{result.inspect}"
+    debug { "result: #{result.inspect}" }
   rescue Exception => e
-    puts "e: #{e}"
+    puts handle(e)
   end
 
   # should this be protected ?
   def process(message, screen_name)
     exit if exit?(message)
+    if run_pre_cmd(message)
+      line = verbose? ? "QUIET MODE: off" : "QUIET MODE: on"
+      yield line if block_given?
+      return
+    end
     result = super(message, screen_name)
     # puts "result: #{result.inspect}"
-    result.each do |line|
-      # puts "line: #{line.inspect}"
-      line.to_s! if line.respond_to?(:to_s!)
-      yield line if block_given?
+    result.each do |lines|
+      # puts "lines: #{lines.inspect}"
+      if lines.is_a? Array
+        lines.each do |line|
+          line.to_s! if line.respond_to?(:to_s!)
+          yield line if block_given?
+        end
+      else
+        line = (lines.respond_to?(:to_s)) ? lines.to_s : lines
+        yield line if block_given?
+      end
     end
   end
 
   private
 
   attr_reader :pwd
+
+  def run_pre_cmd(message)
+    case message
+    when *['Verbose','verbose']
+      self.verbose = true
+      true
+    when  *['Quiet','quiet']
+      self.verbose = false
+      true
+    else
+      false
+    end
+  end
 
   def verbose?
     verbose
