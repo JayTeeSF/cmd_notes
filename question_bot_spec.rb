@@ -1,9 +1,7 @@
-require 'test/unit'
 require 'question_bot.rb'
 
-class QuestionBotTest < Test::Unit::TestCase
-  # SETUP
-  def setup
+describe "QuestionBot" do
+  before (:each) do
     @debug = false
     base_path = '/tmp/question_bot_repo_test_dir'
     %x{rm -rf #{base_path}} if File.exists?(base_path)
@@ -35,18 +33,17 @@ class QuestionBotTest < Test::Unit::TestCase
   def question2; "foo?"; end
   def question3; "bar?"; end
 
-  # TESTS (proper)
-  def test_register_question
+  it "should register a question" do
     register_first_question
   end
 
-  def test_show_question
+  it "should show a question by id" do
     show_question_when_none
     register_first_question
     show_a_question(1)
   end
 
-  def test_show_question_and_answer
+  it "should show a question by id and its answers" do
     register_first_question
     show_a_question_and_its_answers_when_no_answers(1)
     answer_open_question(1, answer1)
@@ -56,20 +53,20 @@ class QuestionBotTest < Test::Unit::TestCase
     show_a_question_and_its_answers(1, [answer1, answer2])
   end
 
-  def test_close_question
+  it "should close an open question" do
     close_question_when_none
     register_first_question
   end
 
-  def test_answer_question
+  it "should answer a question" do
     answer_question_when_none
     register_first_question
     answer_open_question(1, answer1)
     answer_open_question(1, answer2)
   end
 
-  def test_all_answers
-    @pending
+  it "should return all answers" do
+    pending
     #message: all ans
     #send_im: 1 => Hmm... code-curiosity? ...wonders, jayteework
     #send_im:  => One Answer is: code-reading. ...says, jayteework
@@ -80,15 +77,15 @@ class QuestionBotTest < Test::Unit::TestCase
   def show_a_question(id, answer_count=0)
     set_msg id.to_s
     got.tap do |_got|
-      assert( _got.flatten.count == 1 + answer_count )
-      assert( _got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/ )
+      _got.flatten.count.should == 1 + answer_count
+      (_got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/).should be_true
     end
   end
 
   def show_a_question_and_its_answers(id, answers=[])
     _got = show_a_question("#{id} ans", answers.count)
     answers.each_with_index do |answer, index|
-      assert( _got.flatten[1 + index] =~ /#{BotCommander::ANSWER_PREFIX}.*#{answer}/ )
+      (_got.flatten[1 + index] =~ /#{BotCommander::ANSWER_PREFIX}.*#{answer}/).should be_true
     end
   end
 
@@ -99,34 +96,34 @@ class QuestionBotTest < Test::Unit::TestCase
   def show_a_question_and_its_answers_when_typo(id, typo)
     set_msg "#{id} #{typo}"
     got.tap do |_got|
-      assert( _got.flatten.count == 1 )
-      assert( _got.flatten.first =~ /#{BotCommander::UNKNOWN_CMD}/ )
+      _got.flatten.count.should == 1
+      (_got.flatten.first =~ /#{BotCommander::UNKNOWN_CMD}/ ).should be_true
     end
   end
 
   def close_question_when_none
     set_msg "close 1"
-    assert( got == [BotCommander::UNKNOWN_QUESTION_ERROR] )
+    got.should == [BotCommander::UNKNOWN_QUESTION_ERROR]
   end
 
   def show_question_when_none
     set_msg "1"
-    assert( got == [BotCommander::NO_QUESTIONS_FOUND] )
+    got.should == [BotCommander::NO_QUESTIONS_FOUND]
   end
 
   def register_first_question
     set_msg question1
-    assert( got == [BotCommander::REGISTERED_OK] )
+    got.should == [BotCommander::REGISTERED_OK]
   end
 
   def answer_question_when_none
     set_msg "1 #{answer1}"
-    assert( got == [BotCommander::UNKNOWN_QUESTION_ERROR] )
+    got.should == [BotCommander::UNKNOWN_QUESTION_ERROR]
   end
 
   def answer_open_question(id, answer)
     set_msg "#{id} #{answer}"
-    assert( got.any?{|msg| msg =~ /commiting/} )
+    got.any?{|msg| msg =~ /commiting/}.should be_true
   end
 
 end

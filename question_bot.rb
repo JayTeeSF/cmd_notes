@@ -334,48 +334,44 @@ class Bot
   IGNORE_MESSAGE = "I am not authorized to talk to you. ...I am ignoring you."
 
   attr_reader :user, :authorized
-  attr_accessor :verbose
+  attr_accessor :verbose, :one_time
 
-  def initialize(user=nil, pwd=nil, authorized=nil, verbose=false)
-    @user = user || USER
-    @pwd = pwd || PWD
-    @authorized = authorized || AUTHORIZED
-    @verbose = verbose
+  def one_time?
+    !! one_time
   end
 
-  # options:
-  #  :one_time => T/F
-  #  :base_path => /location/of/db
-  def test(buddy=nil, message=nil, options={})
+  def initialize(options={})
+    @user = options[:user] || USER
+    @pwd = options[:pwd] || PWD
+    @authorized = options[:authorized] || AUTHORIZED
+    @verbose = options[:verbose]
+    @one_time = options[:one_time]
     init(options[:base_path])
+  end
+
+  def test(buddy=nil, message=nil)
     buddy ||= prompt BUDDY_PROMPT
     if authorized.member? buddy
       result = nil
       begin
-        message = options[:one_time] ? strip_html( message ) : strip_html( prompt(MESSAGE_PROMPT) ) 
+        message = one_time? ? strip_html( message ) : strip_html( prompt(MESSAGE_PROMPT) ) 
         result = process(message, buddy) do |line|
           line.tap do |msg|
             if verbose?
               msg = add_html(msg)
               debug { "send_im: #{add_html(msg)}" }
             else
-              puts "send_im: #{msg}" unless options[:one_time]
+              puts "send_im: #{msg}" unless one_time?
             end
-            puts
+            puts unless one_time?
           end
         end
       rescue Exception => e
-        handle(e, message).tap do |msg|
-          puts msg
-          puts
-        end
-      end until options[:one_time]
+        handle(e, message).tap &print_msg
+      end until one_time?
       result
     else
-      IGNORE_MESSAGE.tap do |msg|
-        puts msg
-        puts
-      end
+      IGNORE_MESSAGE.tap &print_msg
     end
   end
 
@@ -430,6 +426,13 @@ class Bot
 
   attr_reader :pwd
 
+  def print_msg
+    lambda { |msg|
+      puts msg unless one_time?
+      puts unless one_time?
+    }
+  end
+
   def run_pre_cmd(message)
     case message
     when *['Verbose','verbose']
@@ -474,51 +477,59 @@ class Bot
 
 end
 
-def self.usage
-  puts <<-EOM
-  to run this bot:
-  (a) gem install net-toc
+module CmdLineInterface
+  extend self
 
-  (b) setup at least 2 AIM account(s):
-      o one for this BOT
-      o (at least) one from which to control this BOT
+  def usage
+    puts <<-EOM
+    to run this bot:
+    (a) gem install net-toc
 
-  (c) Create your own #{ENV['HOME']}/bin/secure_settings.rb file, e.g.:
-      module SecureSettings
-        AUTHORIZED = ["your_AIM_screen_name"].freeze
-        USER='AIM_screen_name_for_your_bot'.freeze
-        PWD='AIM_pwd_for_your_bot'.freeze
-      end
+    (b) setup at least 2 AIM account(s):
+    o one for this BOT
+    o (at least) one from which to control this BOT
 
-  and
-  (d) chmod +x the file and run it again, as:
-      #{$0}
+    (c) Create your own #{ENV['HOME']}/bin/secure_settings.rb file, e.g.:
+    module SecureSettings
+      AUTHORIZED = ["your_AIM_screen_name"].freeze
+      USER='AIM_screen_name_for_your_bot'.freeze
+      PWD='AIM_pwd_for_your_bot'.freeze
+    end
 
-  To run in test-mode: #{$0} #{TEST_OPTION}
+    and
+    (d) chmod +x the file and run it again, as:
+    #{$0}
 
-  To see this message, again: #{$0} #{HELP_OPTION}
-  EOM
+    To run in test-mode: #{$0} #{TEST_OPTION}
+
+    To see this message, again: #{$0} #{HELP_OPTION}
+    EOM
+  end
+
+  def flush_input
+    begin
+      ARGV.shift
+    end until ARGV.empty?
+  end
+
+  TEST_OPTION = 'test'
+  HELP_OPTION = '--help'
+  UNKNOWN_OPTION = 'Unknown option...'
+
+  def run
+    case ARGV[0]
+    when nil
+      Bot.new.start    
+    when TEST_OPTION
+      flush_input
+      Bot.new.test
+    when HELP_OPTION
+      usage
+    else
+      puts UNKNOWN_OPTION
+      usage
+    end
+  end
 end
 
-def self.flush_input
-  begin
-    ARGV.shift
-  end until ARGV.empty?
-end
-
-TEST_OPTION = 'test'
-HELP_OPTION = '--help'
-UNKNOWN_OPTION = 'Unknown option...'
-# do_it...
-case ARGV[0]
-  when nil
-    Bot.new.start    
-  when TEST_OPTION
-    flush_input
-    Bot.new.test
-  when HELP_OPTION
-    usage
-  else
-    puts UNKNOWN_OPTION
-    usage
-end
+CmdLineInterface.run if $0 =~ /question_bot.rb/
