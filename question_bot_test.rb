@@ -2,96 +2,131 @@ require 'test/unit'
 require 'question_bot.rb'
 
 class QuestionBotTest < Test::Unit::TestCase
-
+  # SETUP
   def setup
-    @bot = Bot.new
-    @buddy = Bot::AUTHORIZED.first
+    @debug = false
     base_path = '/tmp/question_bot_repo_test_dir'
     %x{rm -rf #{base_path}} if File.exists?(base_path)
+
     @options = {:one_time => true, :base_path => base_path }
-    @message = ""
-    @action = lambda { @bot.test(@buddy, @message, @options) }
+    @bot = Bot.new(@options)
+
+    set_msg ""
+    @buddy = Bot::AUTHORIZED.first
+    @action = lambda {
+      @bot.test(@buddy, @message).tap do |out|
+        puts "out: #{out.inspect}" if @debug
+      end
+    }
   end
 
+  def got
+    @action.call
+  end
+
+  def set_msg(val)
+    @message = val
+  end
+
+  def answer1; "code-reading."; end
+  def answer2; "code-conceptualizing."; end
+
+  def question1; "code-curiosity?"; end
+  def question2; "foo?"; end
+  def question3; "bar?"; end
+
+  # TESTS (proper)
   def test_register_question
-    @message = "code-curiosity?"
-    got = @action.call
-    assert( got == [BotCommander::REGISTERED_OK] )
+    register_first_question
   end
 
   def test_show_question
-    # show q: when no q
-    @message = "1"
-    got = @action.call
-    assert( got == [BotCommander::NO_QUESTIONS_FOUND] )
-
-    # register:
-    @message = "code-curiosity?"
-    got = @action.call
-    assert( got == [BotCommander::REGISTERED_OK] )
-
-    # show q
-    @message = "1"
-    got = @action.call
-    assert( got.flatten.count == 1 )
-    assert( got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/ )
+    show_question_when_none
+    register_first_question
+    show_a_question(1)
   end
 
   def test_show_question_and_answer
-    # register:
-    @message = "code-curiosity?"
-    got = @action.call
-    assert( got == [BotCommander::REGISTERED_OK] )
+    register_first_question
+    show_a_question_and_its_answers_when_no_answers(1)
+    answer_open_question(1, answer1)
+    show_a_question_and_its_answers_when_typo(1, typ_o = 'and')
+    show_a_question_and_its_answers(1, [answer1])
+    answer_open_question(1, answer2)
+    show_a_question_and_its_answers(1, [answer1, answer2])
+  end
 
-    # show q&a: when no ans, just see q
-    @message = "1 ans"
-    got = @action.call
-    assert( got.flatten.count == 1 )
-    assert( got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/ )
-
-    # ans:
-    @message = "1 code-reading."
-    got = @action.call
-    assert( got.any?{|msg| msg =~ /commiting/} )
-
-    # show q&a:
-    @message = "1 ans"
-    got = @action.call
-    assert( got.flatten.count == 2 )
-    assert( got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/ )
-    assert( got.flatten.last =~ /#{BotCommander::ANSWER_PREFIX}/ )
+  def test_close_question
+    close_question_when_none
+    register_first_question
   end
 
   def test_answer_question
-    # ans missing-q:
-    @message = "1 code-reading."
-    got = @action.call
-    assert( got == [BotCommander::UNKNOWN_QUESTION_ERROR] )
+    answer_question_when_none
+    register_first_question
+    answer_open_question(1, answer1)
+    answer_open_question(1, answer2)
+  end
 
-    # register:
-    @message = "code-curiosity?"
-    got = @action.call
-    assert( got == [BotCommander::REGISTERED_OK] )
-
-    # ans:
-    @message = "1 code-reading."
-    got = @action.call
-    assert( got.any?{|msg| msg =~ /commiting/} )
-
-    #message: 1 code-reading.
-    #send_im: [master e217aff] commiting 1_by_jayteework.qst
-    #send_im:  1 files changed, 1 insertions(+), 0 deletions(-)
-    #
-    #message: 1 code-conceptualizing.
-    #send_im: [master f91b139] commiting 1_by_jayteework.qst
-    #send_im:  1 files changed, 1 insertions(+), 0 deletions(-)
-    #
-    #message: all and
-    #send_im: 1 => Hmm... code-curiosity? ...wonders, jayteework
-    #
+  def test_all_answers
+    @pending
     #message: all ans
     #send_im: 1 => Hmm... code-curiosity? ...wonders, jayteework
     #send_im:  => One Answer is: code-reading. ...says, jayteework
     #send_im:  => One Answer is: codee-conceptualizing. ...says, jayteework
   end
+
+  # HELPERS
+  def show_a_question(id, answer_count=0)
+    set_msg id.to_s
+    got.tap do |_got|
+      assert( _got.flatten.count == 1 + answer_count )
+      assert( _got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/ )
+    end
+  end
+
+  def show_a_question_and_its_answers(id, answers=[])
+    _got = show_a_question("#{id} ans", answers.count)
+    answers.each_with_index do |answer, index|
+      assert( _got.flatten[1 + index] =~ /#{BotCommander::ANSWER_PREFIX}.*#{answer}/ )
+    end
+  end
+
+  def show_a_question_and_its_answers_when_no_answers(id)
+    show_a_question("#{id} ans")
+  end
+
+  def show_a_question_and_its_answers_when_typo(id, typo)
+    set_msg "#{id} #{typo}"
+    got.tap do |_got|
+      assert( _got.flatten.count == 1 )
+      assert( _got.flatten.first =~ /#{BotCommander::UNKNOWN_CMD}/ )
+    end
+  end
+
+  def close_question_when_none
+    set_msg "close 1"
+    assert( got == [BotCommander::UNKNOWN_QUESTION_ERROR] )
+  end
+
+  def show_question_when_none
+    set_msg "1"
+    assert( got == [BotCommander::NO_QUESTIONS_FOUND] )
+  end
+
+  def register_first_question
+    set_msg question1
+    assert( got == [BotCommander::REGISTERED_OK] )
+  end
+
+  def answer_question_when_none
+    set_msg "1 #{answer1}"
+    assert( got == [BotCommander::UNKNOWN_QUESTION_ERROR] )
+  end
+
+  def answer_open_question(id, answer)
+    set_msg "#{id} #{answer}"
+    assert( got.any?{|msg| msg =~ /commiting/} )
+  end
+
 end
