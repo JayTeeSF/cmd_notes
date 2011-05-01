@@ -57,11 +57,11 @@ end
 
 module BotCommander
   OPEN_QTYPE = "open"
-  CLOSE_QTYPE = "close"
+  CLOSE_QTYPE = "closed"
   ALL_QTYPE = "all"
   Q_TYPES = [OPEN_QTYPE, CLOSE_QTYPE, ALL_QTYPE]
 
-  QUESTION_FILE_SUFFIX = "qst"
+  FILE_SUFFIX = "qst"
   DEFAULT_OPEN_FILTERS = {:id => "*", :owner => "*", :type => OPEN_QTYPE}.freeze
   QUESTION_PREFIX = "Hmm..."
   ANSWER_PREFIX = "One Answer is:"
@@ -72,7 +72,6 @@ module BotCommander
   MINE = "mine"
 
   HELP_CMD = "help"
-  LIST_CMD = "list"
   ANSWER_CMD = "answer"
   REGISTER_CMD = "register"
   SHOW_CMD = "show"
@@ -90,26 +89,24 @@ module BotCommander
   NO_QUESTIONS_FOUND = "No Questions"
 
   CLOSED_OK = "closed."
-  REGISTERED_OK = "got it."
+  REGISTERED_OK = "hold that thought."
 
   def init
     @db = GitRepo.new("questions_db")
     @db.init
-    @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{QUESTION_FILE_SUFFIX}"].count
+    @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{FILE_SUFFIX}"].count
   end
 
   # Filters:
   #   :id => ...
   #   :owner => ...
   #   :type => ...
-  def list_questions filters={}
+  def show_questions filters={}
     files = question_files(filters)
     results = files.map do |filename|
       _id_and_descr = id_and_description filename
       debug { filters[:answers_too] ? "filters TOO" : "NO FILTERS" }
-      # question = extract_question(filename, filters[:answers_too])
-      # _id_and_descr && question ? _id_and_descr + " => " + question : nil
-      
+
       questions = extract_questions(filename, filters[:answers_too])
 
       unless _id_and_descr || questions
@@ -123,18 +120,6 @@ module BotCommander
     end.compact
     return results.empty? ? [NO_QUESTIONS_FOUND] : results
   end
-  alias :show_question :list_questions
-
-  # FIXED: when DB is empty:
-  # message: show 2
-  #
-  # TypeError: Coercion error: nil.to_str => String failed
-  # def show_question filters={}
-  #   filename = question_files(filters).first
-  #   [extract_question(filename, filters[:answers_too]) || ""]
-  # rescue TypeError => e
-  #   return [NO_QUESTIONS_FOUND]
-  # end
 
   def close_question filters={}
     file_path = question_files(filters).first
@@ -147,32 +132,27 @@ module BotCommander
     end
     destination_file = File.basename(file_path)
     destination_path = File.join(destination_dir, destination_file)
-    File.rename file_path, destination_path #FIXME: make @db responsible for file mgmt
+
+    # FIXME: create DBAdapter class (to wrap @db) which responds to CRUD
+    # it should be (secretly) responsible for any file-mgmt
+    # also:
+    # FIXME: git-mv (vs. system-mv the file); add -u (changes); and commit
+    File.rename file_path, destination_path
 
     @db.commit(destination_file, CLOSE_QTYPE)
     [CLOSED_OK]
   end
 
   def register_question question, owner
-   filename = sanitize_filename("#{next_question_id}#{OWNER_PREFIX}#{owner}.#{QUESTION_FILE_SUFFIX}")
+   filename = sanitize_filename("#{next_question_id}#{OWNER_PREFIX}#{owner}.#{FILE_SUFFIX}")
    debug { "storing the following question: #{question} in #{filename}..." }
    open_question(filename, {:question => question, :author => owner})
    [REGISTERED_OK]
   end
 
-  # FIXED: when DB is empty:
-  # message: answer: 1 an answer is.
-  # storing the following answer: an answer is. in ...
-  # NoMethodError: undefined method `each' on false:FalseClass.
-  #
-  # BUG2:
-  # storing the following answer: an answer is. in /tmp/questions_db/open/2_by_jayteework.qst...
-  # Errno::ENOENT: No such file or directory -
-  # /tmp/questions_db/open//tmp/questions_db/open/2_by_jayteework.qst
-  #
   def answer_question answer, author, filters={}
-    # answer even closed questions (?!)
-    filename = question_files({:type => "*"}.merge(filters)).first
+    # can't answer closed questions
+    filename = question_files(filters).first
     return [UNKNOWN_QUESTION_ERROR] unless filename
 
     debug { "storing the following answer: #{answer} in #{filename}..." }
@@ -196,23 +176,21 @@ module BotCommander
       filters[:id] = $1; answer = $2
       answer_question answer, owner, filters
 
-    # TODO: merge LIST & SHOW cmds...
-    when /^#{LIST_CMD}(?:|\:)(?:|\s+([\w]+)(?:|\s+([\w]+)))\s*$/i
-      q_type = $1; whose = $2
-      if Q_TYPES.member?(q_type)
-        filters[:type] = (q_type == ALL_QTYPE) ? "*" : q_type
+    when /^(?:|#{SHOW_CMD})(?:|\:\s+)\s*([\d]+|(?:#{Q_TYPES.join("|")})+(?:|\s+([\w]+)))(?:|\s+(#{ANSWERS_TOO}))\s*$/i
+      first_val = $1; second_val = $2; third_val = $3
+      debug { "fv: #{first_val.inspect}; sv: #{second_val.inspect}; tv: #{third_val}" }
+      if (first_val[/^\d+$/])
+        filters[:id] = first_val
+        ans = second_val
+      else
+        q_type = first_val
+        whose = (MINE == second_val) ? owner : second_val
+        ans = (third_val || ANSWERS_TOO == second_val) ? true : false
       end
-      whose = (MINE == whose) ? owner : whose
+      filters[:answers_too] = ans
       filters[:owner] = sanitize_filename(whose) if authorized.member?(whose)
-     list_questions filters
-
-    when /^#{SHOW_CMD}(?:|\:)\s+([\d]+|[\w]+)(?:|\s+(#{ANSWERS_TOO}))\s*$/i
-      first_val = $1; ans = $2
-      debug { "fv: #{first_val.inspect}; ans: #{ans.inspect}" }
-      (first_val[/^\d+$/]) ? filters[:id] = first_val : q_type = first_val
-      filters[:answers_too] = true unless ans.nil? || ans.empty?
       filters[:type] = (Q_TYPES - [ALL_QTYPE]).member?(q_type) ? q_type : "*"
-      show_question filters
+      show_questions filters
 
     when /^#{CLOSE_CMD}(?:|\:)\s+([\d]+)/i
       filters[:id] = $1
@@ -301,8 +279,7 @@ module BotCommander
     [
       HELP_CMD,
       "#{REGISTER_CMD}: some question?",
-      "#{LIST_CMD}|#{LIST_CMD}: <q_type>|#{LIST_CMD}: <q_type> <owner>",
-      "#{SHOW_CMD}: <id>|#{SHOW_CMD}: all|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: all #{ANSWERS_TOO}",
+      "#{SHOW_CMD}: <id>|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: <q_type>|#{SHOW_CMD}: <q_type> <owner>|#{SHOW_CMD}: <q_type> #{ANSWERS_TOO}",
       "#{ANSWER_CMD}: <id> an answer is.",
       "#{CLOSE_CMD}: <id>",
       "\t<q_type>: #{Q_TYPES.join(" | ")}",
@@ -313,13 +290,12 @@ module BotCommander
   def question_files filters={}
     filters = DEFAULT_OPEN_FILTERS.merge(filters)
     debug { "w/ filters: #{filters.inspect}" }
-    Dir[file_path(filters[:id] + "#{OWNER_PREFIX}#{filters[:owner]}.#{QUESTION_FILE_SUFFIX}", filters[:type])]
+    Dir[file_path(filters[:id] + "#{OWNER_PREFIX}#{filters[:owner]}.#{FILE_SUFFIX}", filters[:type])]
   end
 
   def extract_questions filename, answers_too=false
-    l = match_question(answers_too)
-    # (File.open(filename).find &l).tap do |question|
-    (File.open(filename).select &l).collect do |question|
+    filter = match_question(answers_too)
+    (File.open(filename).select &filter).collect do |question|
       question.chomp! if question.respond_to?(:chomp!)
     end
   end
