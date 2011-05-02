@@ -1,4 +1,4 @@
-require 'question_bot.rb'
+require "#{File.dirname(ARGV[0])}/question_bot.rb"
 
 describe "QuestionBot" do
   before (:all) do
@@ -80,27 +80,27 @@ describe "QuestionBot" do
 
           context "with no answers" do
             it "should show the question(s) but no answers" do
-              pending "missing method: show_all_questions_and_their_answers help"
-              show_all_question_and_their_answers_when_no_answers
+              show_all_question_and_their_answers_when_no_answers([question1, question2, question3])
             end
           end
 
           context "with an answer" do
-            before :all do
-              pending "missing method: show_all_questions_and_their_answers help"
+            before(:each) do
+              answer_open_question(1, answer1)
             end
             it "should return all answers" do
-              show_all_questions_and_their_answers({1 => [answer1], 2 => [], 3 => []})
+              show_all_questions_and_their_answers({question1 => [answer1], question2 => [], question3 => []})
             end
 
-            it "should return all answers when two questions are answered the same" do
+            it "should return all answers when two questions are answered" do
               answer_open_question(2, answer1)
-              show_all_questions_and_their_answers({1 => [answer1], 2 => [answer1], 3 => []})
+              show_all_questions_and_their_answers({question1 => [answer1], question2 => [answer1], question3 => []})
             end
 
-            it "should return all answers when two questions are answered differently" do
-              answer_open_question(2, answer2)
-              show_all_questions_and_their_answers({1 => [answer1], 2 => [answer2], 3 => []})
+            it "should return all answers when all questions are answered" do
+              answer_open_question(2, answer1)
+              answer_open_question(3, answer2)
+              show_all_questions_and_their_answers({question1 => [answer1], question2 => [answer1], question3 => [answer2]})
             end
           end
 
@@ -139,7 +139,6 @@ describe "QuestionBot" do
             it "should return all answers" do
               show_all_questions_and_their_answers({1 => [answer1]})
             end
-
 
             context "with multiple answers" do
               before :each do
@@ -243,8 +242,10 @@ describe "QuestionBot" do
     _got = got
 
     (_got.flatten.first =~ /#{BotCommander::QUESTION_PREFIX}/).should be_true
-    _got.flatten.select {|line| line =~ /#{BotCommander::QUESTION_PREFIX}/}.count.should == questions.count
-    _got.flatten.select {|line| line =~ /#{BotCommander::ANSWER_PREFIX}/}.count.should == answers.count
+    question_responses = _got.flatten.select {|line| line =~ /#{BotCommander::QUESTION_PREFIX}/}
+    question_responses.count.should be( questions.count), "question_responses: #{question_responses.inspect}"
+    answer_responses = _got.flatten.select {|line| line =~ /#{BotCommander::ANSWER_PREFIX}/}
+    answer_responses.count.should be(answers.count), "answer_responses: #{answer_responses.inspect}"
 
     # outer-loop questions -- how to match the order ?!
     # answers.each_with_index do |answer, index|
