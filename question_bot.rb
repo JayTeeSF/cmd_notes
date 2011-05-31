@@ -5,6 +5,33 @@ require 'rubygems'
 require 'net/toc'
 require ENV["HOME"] + "/bin/secure_settings.rb"
 
+module DebugPrinter
+  attr_accessor :verbose
+
+  def verbose?
+    verbose
+  end
+
+  def debug &block
+    puts yield if verbose?
+  end
+end
+
+module QStats
+  OPEN_QSTATUS = "open"
+  CLOSE_QSTATUS = "closed"
+  ALL_QSTATUS = "all"
+  Q_TYPES = [OPEN_QSTATUS, CLOSE_QSTATUS, ALL_QSTATUS]
+end
+
+module QnAEmbellishment
+  QUESTION_PREFIX = "Hmm..."
+  AUTHOR_PREFIX = "...wonders,"
+
+  ANSWER_PREFIX = "How about:"
+  RESPONDENT_PREFIX = "...says,"
+end
+
 class GitRepo
   DEFAULT_BASE_PATH = '/tmp' # you may want to move this ;-)
   ALL_FILES = ".".freeze
@@ -45,7 +72,7 @@ class GitRepo
       return
     end
     chdir(_dir)
-    %x/git add #{filename}/ 
+    %x/git add #{filename}/
   end
 
   private
@@ -57,21 +84,175 @@ class GitRepo
 
 end
 
+require 'sqlite3'
+class DbRepo
+  include DebugPrinter
+  include QStats
+  include QnAEmbellishment
+
+  CREATE_QUERIES = {
+    :authors => "CREATE TABLE authors(id INTEGER PRIMARY KEY, screenname varchar(255))",
+    :questions => "CREATE TABLE questions(id INTEGER PRIMARY KEY, author_id integer, text varchar(255), status varchar(255))",
+    :comments => "CREATE TABLE comments(id INTEGER PRIMARY KEY, question_id integer, author_id integer, text varchar(255))"
+  }
+
+  attr_reader :connection, :db_file, :config_file
+
+  def find_all_questions_by(filters)
+    get_comments = filters.delete(:answers_too) || false
+    if author = filters.delete(:owner)
+      filters[:author_id] = author_id(author)
+    end
+    filters[:status] = OPEN_QSTATUS unless filters[:status]
+    filters.delete(:status) if '*' == filters[:status]
+
+    _query = "SELECT id, text FROM questions" + where_clause(filters)
+    debug {"query: #{_query}"}
+    questions = {}
+    connection.query(_query) do |result|
+      id, text = result.next
+      debug {"id: #{id.inspect}, text: #{text.inspect}"}
+      questions[id] = {:text => text.dup} if text
+    end
+    return ["no questions"] if questions.empty?
+
+    get_comments ? append_comments(questions) : questions.map do |q_id,v|
+      "#{q_id} => #{QUESTION_PREFIX} #{v[:text]} #{AUTHOR_PREFIX} #{question_author(q_id)}"
+    end
+  end
+
+  def append_comments(questions={})
+    q_ids = questions.keys.dup
+    q_ids.each do |q_id|
+      comments = find_all_comments_by(q_id)
+      questions[q_id][:comments] = comments unless comments.empty?
+    end
+
+    questions.map do |q_id,v|
+      question_info = "#{q_id} => #{QUESTION_PREFIX} #{v[:text]} #{AUTHOR_PREFIX} #{question_author(q_id)}"
+      v[:comments] ? question_info + "\n\t#{v[:comments].values.map{|h| "#{ANSWER_PREFIX} #{h[:text]} #{RESPONDENT_PREFIX} #{author(h[:author_id])}"}.join("\n\t")}" : question_info
+    end
+  end
+
+  def find_all_comments_by(question_id)
+    comments = {}
+    _query = "SELECT id, text, author_id FROM comments where question_id = #{question_id}"
+    connection.query(_query) do |result|
+      id, text, author_id = result.next
+      debug {"id: #{id.inspect}, text: #{text.inspect}"}
+      comments[id] = {} if text || author_id
+      comments[id][:text] = text.dup if text
+      comments[id][:author_id] = author_id if author_id      
+    end
+    comments
+  end
+
+
+
+  # def find_question_by_id(id)
+  #   _query = "SELECT text FROM questions where id = #{id}"
+  #   connection.get_first_value(_query)
+  # end
+
+  def question_author(question_id)
+    connection.get_first_value("SELECT screenname FROM authors, questions where authors.id = questions.author_id and questions.id = "+question_id.to_s)
+  end
+
+  def author(author_id)
+    connection.get_first_value("SELECT screenname FROM authors where authors.id = "+author_id.to_s)
+  end
+
+  def author_id(author)
+    connection.get_first_value("SELECT id FROM authors where screenname = '"+author+"'").to_s
+  end
+
+  def close(question_id)
+    connection.execute "UPDATE questions set status = '#{CLOSE_QSTATUS}' where id = "+question_id
+  end
+
+  def answer(answer, author, question_id)
+    connection.execute "INSERT INTO comments(text, author_id, question_id) VALUES('"+answer+"', "+author_id(author)+", "+question_id+")"
+  end
+
+  def store_question(question, author)
+    debug {"storing question (#{question}) by #{author}"}
+    unless 1 == connection.get_first_value("SELECT count(*) FROM authors where screenname = '"+author+"'")
+      debug {"adding #{author.inspect} to the authors table"}
+      connection.execute "INSERT INTO authors(screenname) VALUES('"+author+"')"
+    end
+    a_id = author_id(author)
+    debug {"author_id: #{a_id.inspect}"}
+    connection.execute "INSERT INTO questions(author_id, text) VALUES("+a_id+", '"+question+"')"
+  end
+
+  def initialize(options={})
+    @verbose = !! options[:verbose]
+    @config_file = ENV["HOME"] + "/config/database.yml"
+    setup
+  end
+
+  def cleanup
+    connection.close if connection
+    # File.delete( db_file ) if File.exists? db_file
+  end
+
+  def setup
+    connect_to_db
+    startup
+  end
+
+  private
+
+    def missing_tables?
+      ! CREATE_QUERIES.keys.all? do |table|
+        begin
+          connection.execute "select count(*) from #{table}"
+          true
+        rescue SQLite3::SQLException
+          false
+        end
+      end
+    end
+
+    def startup
+      return unless missing_tables?
+
+      CREATE_QUERIES.each_pair do |table, create_query|
+        begin
+          connection.execute "DROP TABLE #{table}"
+        rescue SQLite3::SQLException => e
+          puts "e: #{e.inspect}"
+        end
+        connection.execute create_query
+      end
+    end
+
+    def where_clause(filters={})
+      debug {"where w/ filters: #{filters.inspect}"}
+      filters.empty? ? "" : " where #{filters.map{|k,v| "#{k} = '#{v}'" }.join(" and ")}"
+    end
+
+    def config
+      require 'yaml'
+      return {} unless File.exists?(config_file)
+      YAML::load_file(config_file)
+    end
+
+    def connect_to_db
+      @db_file = config["question_bot"]["database"]
+      @connection = SQLite3::Database.new db_file
+    end
+end
+
 module BotCommander
   extend self
+  include DebugPrinter
+  include QStats
 
-  OPEN_QTYPE = "open"
-  CLOSE_QTYPE = "closed"
-  ALL_QTYPE = "all"
-  Q_TYPES = [OPEN_QTYPE, CLOSE_QTYPE, ALL_QTYPE]
-
-  FILE_SUFFIX = "qst"
-  DEFAULT_OPEN_FILTERS = {:id => "*", :owner => "*", :type => OPEN_QTYPE}.freeze
-  QUESTION_PREFIX = "Hmm..."
-  ANSWER_PREFIX = "How about:"
-  RESPONDENT_PREFIX = "...says,"
-  AUTHOR_PREFIX = "...wonders,"
+  # BEGIN-BOGUS:
   OWNER_PREFIX = "_by_"
+  FILE_SUFFIX = "qst"
+  # END-BOGUS
 
   MINE = "mine"
 
@@ -94,73 +275,59 @@ module BotCommander
 
   CLOSED_OK = "closed."
   REGISTERED_OK = "hold that thought."
+  ANSWERED_OK = "That's what you say!"
 
+  attr_reader :repo
   def init(base_path=nil)
-    @db = GitRepo.new("questions_db", base_path)
-    @db.init
-    @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{FILE_SUFFIX}"].count
+    @repo = DbRepo.new(:verbose => verbose)
+    # @repo = GitRepo.new("question_bot_repo" base_path)
+    # repo.init
+    # @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{FILE_SUFFIX}"].count
   end
 
   # Filters:
   #   :id => ...
   #   :owner => ...
-  #   :type => ...
+  #   :status => ...
   def show_questions filters={}
-    files = question_files(filters)
-    results = files.map do |filename|
-      _id_and_descr = id_and_description filename
-      debug { filters[:answers_too] ? "filters TOO" : "NO FILTERS" }
+    debug {"got 'show_questions' filters: #{filters.inspect}"}
+    questions = repo.find_all_questions_by(filters)
+    questions.empty? ? [NO_QUESTIONS_FOUND] : questions
 
-      questions = extract_questions(filename, filters[:answers_too])
-
-      unless _id_and_descr || questions
-        nil
-      else
-        [_id_and_descr + " => " + questions.first] +        
-        questions[1..-1].collect do |question|
-          "\t => " + question
-        end
-    end
-    end.compact
-    return results.empty? ? [NO_QUESTIONS_FOUND] : results
+    # results = files.map do |filename|
+    #   _id_and_descr = id_and_description filename
+    #   debug { filters[:answers_too] ? "filters TOO" : "NO FILTERS" }
+    #
+    #   questions = extract_questions(filename, filters[:answers_too])
+    #
+    #   unless _id_and_descr || questions
+    #     nil
+    #   else
+    #     [_id_and_descr + " => " + questions.first] +
+    #     questions[1..-1].collect do |question|
+    #       "\t => " + question
+    #     end
+    #   end
+    # end.compact
+    # return results.empty? ? [NO_QUESTIONS_FOUND] : results
   end
 
   def close_question filters={}
-    file_path = question_files(filters).first
-    return [UNKNOWN_QUESTION_ERROR] unless file_path
+    debug {"got 'close_question' filters: #{filters.inspect}"}
+    repo.close(filters[:id])
 
-    destination_dir = @db.destination_dir(CLOSE_QTYPE)
-    unless File.exists?(destination_dir)
-      Dir.chdir @db.working_dir
-      Dir.mkdir CLOSE_QTYPE
-    end
-    destination_file = File.basename(file_path)
-    destination_path = File.join(destination_dir, destination_file)
-
-    # FIXME: create DBAdapter class (to wrap @db) which responds to CRUD
-    # it should be (secretly) responsible for any file-mgmt
-    # also:
-    # FIXME: git-mv (vs. system-mv the file); add -u (changes); and commit
-    File.rename file_path, destination_path
-
-    @db.commit(destination_file, CLOSE_QTYPE)
     [CLOSED_OK]
   end
 
   def register_question question, owner
-   filename = sanitize_filename("#{next_question_id}#{OWNER_PREFIX}#{owner}.#{FILE_SUFFIX}")
-   debug { "storing the following question: #{question} in #{filename}..." }
-   open_question(filename, {:question => question, :author => owner})
-   [REGISTERED_OK]
+    repo.store_question(question, owner)
+
+    [REGISTERED_OK]
   end
 
   def answer_question answer, author, filters={}
-    # can't answer closed questions
-    filename = question_files(filters).first
-    return [UNKNOWN_QUESTION_ERROR] unless filename
-
-    debug { "storing the following answer: #{answer} in #{filename}..." }
-    append_answer_to_file(filename, {:answer => answer, :author => author})
+    repo.answer(answer, author, question_id=filters[:id])
+    [ANSWERED_OK]
   end
 
   # returns an array of messages to reply with
@@ -186,13 +353,13 @@ module BotCommander
       if (first_val[/^\d+$/])
         filters[:id] = first_val
       else
-        q_type = first_val
+        q_status = first_val
         whose = (MINE == second_val) ? owner : second_val
       end
       ans = (third_val || ANSWERS_TOO == second_val) ? true : false
       filters[:answers_too] = ans
       filters[:owner] = sanitize_filename(whose) if authorized.member?(whose)
-      filters[:type] = (Q_TYPES - [ALL_QTYPE]).member?(q_type) ? q_type : "*"
+      filters[:status] = (Q_TYPES - [ALL_QSTATUS]).member?(q_status) ? q_status : "*"
       show_questions filters
 
     when /^#{CLOSE_CMD}(?:|\:)\s+([\d]+)/i
@@ -206,43 +373,6 @@ module BotCommander
   end
 
   protected
-
-  def open_question filename, content
-    unless File.exists?(file_dir(OPEN_QTYPE))
-      Dir.chdir @db.working_dir
-      Dir.mkdir OPEN_QTYPE
-    end
-    File.open(file_path(filename, OPEN_QTYPE), "w") do |f|
-      f.puts "#{QUESTION_PREFIX} #{content[:question]} #{AUTHOR_PREFIX} #{content[:author]}"
-    end
-    @db.commit(filename, OPEN_QTYPE)
-    incr
-  end
-
-  def append_answer_to_file filename, content
-    return [UNKNOWN_QUESTION_ERROR] unless File.exists?(filename)
-    File.open(filename, "a") do |f|
-      f.puts "#{ANSWER_PREFIX} #{content[:answer]} #{RESPONDENT_PREFIX} #{content[:author]}"
-    end
-    @db.commit(*file_and_sub_dir(filename))
-    
-  end
-
-  def file_and_sub_dir(fullpath)
-    file_and_sub_dir_ary = [File.basename(fullpath)]
-
-    case File.dirname(fullpath)
-    when file_dir(OPEN_QTYPE)
-      file_and_sub_dir_ary << OPEN_QTYPE
-
-    when file_dir(CLOSE_QTYPE)
-      file_and_sub_dir_ary << CLOSE_QTYPE
-
-    else
-      raise RuntimeError, "Unknown File Path: #{File.dirname(fullpath).inspect} vs. #{file_dir(OPEN_QTYPE)} "
-
-    end
-  end
 
   # TODO: create a Message Class that encapsulates & handles all of this...
   def add_html message
@@ -261,64 +391,30 @@ module BotCommander
 
   private
 
-  def id_and_description filename
-    file_basename_without_extension(filename).sub(/#{OWNER_PREFIX}.*$/, "")
-  end
+  # def id_and_description filename
+  #   file_basename_without_extension(filename).sub(/#{OWNER_PREFIX}.*$/, "")
+  # end
 
-  def file_basename_without_extension(filename)
-    File.basename(filename, File.extname(File.basename(filename)))
-  end
   def replace_special_chars(str)
     str.gsub(/[^0-9A-Za-z.\-]/, SPECIAL_CHAR_REPLACEMENT)
   end
-
+  
   def remove_invalid_chars(str)
     str.gsub(/^.*(\\|\/)/, '')
   end
 
-  attr_reader :next_question_id
+  # attr_reader :next_question_id
 
   def cmd_info
     [
       HELP_CMD,
       "#{REGISTER_CMD}: some question?",
-      "#{SHOW_CMD}: <id>|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: <q_type>|#{SHOW_CMD}: <q_type> <owner>|#{SHOW_CMD}: <q_type> #{ANSWERS_TOO}",
+      "#{SHOW_CMD}: <id>|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: <q_status>|#{SHOW_CMD}: <q_status> <owner>|#{SHOW_CMD}: <q_status> #{ANSWERS_TOO}",
       "#{ANSWER_CMD}: <id> an answer is.",
       "#{CLOSE_CMD}: <id>",
-      "\t<q_type>: #{Q_TYPES.join(" | ")}",
+      "\t<q_status>: #{Q_TYPES.join(" | ")}",
       "\t<owner>: #{MINE} | #{authorized.join(" | ")}"
     ]
-  end
-
-  def question_files filters={}
-    filters = DEFAULT_OPEN_FILTERS.merge(filters)
-    debug { "w/ filters: #{filters.inspect}" }
-    Dir[file_path(filters[:id] + "#{OWNER_PREFIX}#{filters[:owner]}.#{FILE_SUFFIX}", filters[:type])]
-  end
-
-  def extract_questions filename, answers_too=false
-    filter = match_question(answers_too)
-    (File.open(filename).select &filter).collect do |question|
-      question.chomp! if question.respond_to?(:chomp!)
-    end
-  end
-
-  def match_question(answers_too=false)
-    regex = QUESTION_PREFIX
-    regex += "|#{ANSWER_PREFIX}" if answers_too
-    lambda {|line| line =~ /^(?:#{regex})/ }
-  end
-
-  def incr
-    @next_question_id += 1
-  end
-
-  def file_dir sub_dir
-    "#{@db.working_dir}/#{sub_dir}"
-  end
-
-  def file_path file_name, sub_dir
-    "#{file_dir(sub_dir)}/#{file_name}"
   end
 
 end
@@ -334,7 +430,7 @@ class Bot
   IGNORE_MESSAGE = "I am not authorized to talk to you. ...I am ignoring you."
 
   attr_reader :user, :authorized
-  attr_accessor :verbose, :one_time
+  attr_accessor :one_time
 
   def one_time?
     !! one_time
@@ -354,7 +450,7 @@ class Bot
     if authorized.member? buddy
       result = nil
       begin
-        message = one_time? ? strip_html( message ) : strip_html( prompt(MESSAGE_PROMPT) ) 
+        message = one_time? ? strip_html( message ) : strip_html( prompt(MESSAGE_PROMPT) )
         result = process(message, buddy) do |line|
           line.tap do |msg|
             if verbose?
@@ -446,14 +542,6 @@ class Bot
     end
   end
 
-  def verbose?
-    verbose
-  end
-
-  def debug &block
-    puts yield if verbose?
-  end
-
   def prompt(msg)
     print msg
     gets.chomp.tap do |response|
@@ -468,7 +556,7 @@ class Bot
 
   def handle(e, message="")
     goodbye if exit?(message)
-    "#{e.class}: #{e}"
+    "#{e.class}: #{e.inspect} - #{e.backtrace}"
   end
 
   def exit?(message)
@@ -512,6 +600,7 @@ module CmdLineInterface
     end until ARGV.empty?
   end
 
+  DEBUG_OPTION = 'debug'
   TEST_OPTION = 'test'
   HELP_OPTION = '--help'
   UNKNOWN_OPTION = 'Unknown option...'
@@ -519,7 +608,10 @@ module CmdLineInterface
   def run
     case ARGV[0]
     when nil
-      Bot.new.start    
+      Bot.new.start
+    when DEBUG_OPTION
+      flush_input
+      Bot.new(:verbose => true).test
     when TEST_OPTION
       flush_input
       Bot.new.test
