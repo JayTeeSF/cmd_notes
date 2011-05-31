@@ -1,0 +1,24 @@
+Consideration(s):
+I. Energy Level vs. Activity
+  (from low to high)
+  write code to pass spec
+  simple refactorings (i.e. extract method)
+  harder refactorings (i.e. move method)
+  write spec
+  write cuke (scenario)
+  debugging
+  write cuke setup
+
+  I should work from High to Low!
+
+II. Use resources
+  Some time ago I found/augmented a 'pm' method that was great for inspecting Ruby objects.
+  Unfortunately it broke, and I failed to do two things:
+  1. fix it
+  2. be code-curious enough to understand what it was doing, so that I could take advantage of its warez
+  This week I got caught, because I had a method that was misbehaving, but my end-of-the-day debugging was weak.
+  I didn't have that tool and I didn't remember: self.method :foo as a way of finding where a class's method(s) are defined.
+  I used caller, I even used "method(s)", but I needed method!
+
+  Likewise, I don't have my editor setup properly. Fixing my textmate to RVM integration would do wonders for running cmds in context (i.e. ctags & spec/cuke-runners)
+

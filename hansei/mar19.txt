@@ -1,0 +1,20 @@
+Consideration(s):
+I. FalsePressure
+   (Technical) Mgr said, this is a 13
+  (meaning 3 - 4 days max)
+   (side story: I heard 30 and thought he was still a bit underestimating ...but after clarifying, I was silent)
+   By the 2nd day, I was pushing to get 5 mins of his time to clarify the purpose of the task -- because the ticket was brief, but sweeping in its desires: replace implementations of 5 major objects...
+   So we gutted the code
+   all tests failed
+   and we spent the next 5 days trying to make the existing specs/cukes pass
+   later that 2nd day, we got the meeting, only to discover a much less aggressive expectation ("if you can... but implement it in a piecewise fashion -- as if you had common sense") ;-)
+   Yep, I had lost my mind.
+   We opened 3 classes and should have stuck with the 1. It still would have taken 3+ days to get the specs passing, because there was no real way to ease into the refactoring.
+   ...Then again...
+   It was a function of the goal.
+   If refactoring was the goal, then I would have started there and in 3 days concluded whereever I was. But of course, the requirement was to completely replace the one object, and if poss. on it's associations...
+
+   Anyway, falsePressure crept-in after day 1 -- when I felt 33% done was expected.
+   Even after having had a discussion (on Thu) about how it would take us into the next week, I was still unable to point out that it was going to take at least that long to get the existing specs/cukes to pass.
+   I let this falsePressure cause me to act like victim...
+
