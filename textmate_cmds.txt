@@ -1,3 +1,4 @@
+cmd-shift-h => takes selected (view) text and creates a partial with that information -- and sets-up the partial-render tag
 cntrl-cmd-r => open the folders to reveal the current file
 cntrl-shift-g => Blame Annotated...
 

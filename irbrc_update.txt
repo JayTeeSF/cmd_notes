@@ -1,0 +1,22 @@
+↪ gem install irbtools
+Successfully installed wirb-0.2.6
+Successfully installed unicode-display_width-0.1.1
+Successfully installed fancy_irb-0.6.5
+Successfully installed zucker-10
+Successfully installed awesome_print-0.4.0
+Successfully installed clipboard-0.9.8
+Successfully installed coderay-0.9.8
+Successfully installed alias-0.2.2
+Successfully installed boson-0.3.3
+Successfully installed spoon-0.0.1
+Successfully installed interactive_editor-0.0.8
+Successfully installed ori-0.1.0
+Successfully installed sketches-0.1.1
+Successfully installed ruby-growl-3.0
+Successfully installed g-1.4.0
+Successfully installed methodfinder-1.2.3
+Successfully installed rvm_loader-1.0.0
+Successfully installed every_day_irb-1.0.1
+Successfully installed irbtools-1.0.1
+19 gems installed
+

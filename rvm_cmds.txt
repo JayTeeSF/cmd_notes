@@ -1,3 +1,19 @@
+For compiling in support of other apps (e.g. tk)
+append: -C --enable-shared,--enable-pthread
+e.g.
+rvm install 1.9.2 -C --enable-shared,--enable-pthread
+#actually:
+rvm install ree --enable-pthread
+
+# also try:
+# gem install tk_as_gem #<-- I don't think this was needed
+
+#If you're using RVM, then you can do this to remove current ruby gems, then upgrade/downgrade rubygems:
+# rvm install rubygems 1.3.6
+# this is great, since I broke my system by upgrading ruby!!!
+
+
+
 > rvm ree@wiz
 > gem list
 
