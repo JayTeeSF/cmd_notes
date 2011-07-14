@@ -1,0 +1,17 @@
+To view annotated tags you can use the same -l option as before, but you have to instruct git to show the annotation messages as well:
+git tag -l -n1
+This will not only show the messages for the annotated tags, it will also show the commit message of the revisions tagged with lightweight tags as well. Quite useful!
+
+
+git tag -a -m "Tagging first full mixer release" v0.0.1
+# note, not using '-s' due to broken openpgp
+git push origin —tags
+# git push origin master --tags
+
+There are times when you want to remove tags as well. This quite easy:
+git tag -d tag_name
+
+To remove a tag on a remote repository, you should do a special push:
+git push origin :refs/tags/tag_name
+for github try:
+git push origin :v0.0.2

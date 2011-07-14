@@ -271,6 +271,7 @@ module BotCommander
   SPECIAL_CHAR_REPLACEMENT = '_'
 
   UNKNOWN_QUESTION_ERROR = "Unknown Question"
+  UNKNOWN_QUESTION_ERROR_PREFIX = "I know nothing about"
   NO_QUESTIONS_FOUND = "No Questions"
 
   CLOSED_OK = "closed."
@@ -342,6 +343,7 @@ module BotCommander
     when /^(?:|#{REGISTER_CMD})(?:|\:\s+)\s*([^\?]+\?)\s*$/i
       question = $1
       register_question(question, owner)
+      # should attempt to answer the question, if we know it already, else say: "I know nothing about #{question}"
 
     when /^(?:|#{ANSWER_CMD})(?:|\:\s+)\s*([\d]+)\s+(.+\.)\s*$/i
       filters[:id] = $1; answer = $2

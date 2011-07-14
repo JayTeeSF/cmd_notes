@@ -1,0 +1,26 @@
+gem 'psych' #=> true
+require 'psych' #=> true
+Psych::VERSION #=> "1.2.0"
+YAML::ENGINE.yamler #=> "syck"
+YAML::ENGINE.yamler = "psych" #=> "psych"
+
+class Foo; attr_reader :name; def initialize(_name); @name = _name; end end #=> nil
+f = Foo.new("Joe") #=> #<Foo:0x000001009f7e40 @name="Joe">
+f_prime = YAML.load YAML.dump(f) #=> #<Foo:0x00000100901a68 @name="Joe">
+
+
+f.object_id #=> 2152709920
+f_prime.object_id #=> 2152205620
+# exit irb
+# restart irb
+f_prime_object_id = 2152205620 #=> 2152205620
+f_object_id = 2152709920 #=> 2152709920
+
+ObjectSpace._id2ref(f_object_id)
+# RangeError: 0x000000804fbf20 is not id value
+#   from (irb):6:in `_id2ref'
+#   from (irb):6
+#   from /Users/jaytee/.rvm/rubies/ruby-1.9.2-p180/bin/irb:16:in `<main>'
+ObjectSpace._id2ref(f_prime_object_id) #=> "# = delegate -- Support for the Delegation Pattern\n"
+
+# ugh...

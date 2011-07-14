@@ -1,0 +1,12 @@
+# Given:
+  Row = Struct.new(:report_on, :report_by, :value)
+
+  rows = []
+  10.times do |t|
+    rows << Row.new("moc #{t / 2}", "Form #{t/10}", 1)
+  end
+
+# Then: Thanks to Ruby's Enumerable mixin
+
+# When: I want to group those rows by their report_on value, I can:
+  rows.group_by(&:report_on)

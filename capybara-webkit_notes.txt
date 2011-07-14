@@ -1,0 +1,10 @@
+curl -O http://get.qt.nokia.com/qt/source/qt-mac-opensource-4.7.3.dmg
+gem install capybara-webkit
+Building native extensions.  This could take a while...
+Successfully installed capybara-webkit-0.5.0
+Successfully installed ffi-1.0.9
+Successfully installed childprocess-0.1.9
+3 gems installed
+
+gem "capybara-webkit"
+Capybara.javascript_driver = :webkit

@@ -1,0 +1,3 @@
+# from Damien Conway talk: http://blip.tv/file/1145545/
+one year: 2**25 seconds
+two year: 2**26 seconds
