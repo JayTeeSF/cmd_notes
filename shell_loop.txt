@@ -1,3 +1,7 @@
+# print out the date followed by each file (or subdir) in current dir:
+for t in * ; do echo `date` $t ; done;
+
+#
 (for ((i = 1;i<=10; i++)); do echo "hi$i"; done)
 
 #

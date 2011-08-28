@@ -1,0 +1,5 @@
+google_hash supposedly faster (though not worked-on since 12/2010)
+gem install 'google_hash'
+    a = GoogleHashDenseRubyToRuby.new
+    a['abc'] = 'def'
+    a['abc'].should == 'def'
