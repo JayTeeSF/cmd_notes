@@ -2,7 +2,8 @@
 
 require 'fileutils'
 require 'rubygems'
-require 'net/toc'
+require 'xmpp4r-simple'
+
 require ENV["HOME"] + "/bin/secure_settings.rb"
 
 module DebugPrinter
@@ -203,45 +204,45 @@ class DbRepo
 
   private
 
-    def missing_tables?
-      ! CREATE_QUERIES.keys.all? do |table|
-        begin
-          connection.execute "select count(*) from #{table}"
-          true
-        rescue SQLite3::SQLException
-          false
-        end
+  def missing_tables?
+    ! CREATE_QUERIES.keys.all? do |table|
+      begin
+        connection.execute "select count(*) from #{table}"
+        true
+      rescue SQLite3::SQLException
+        false
       end
     end
+  end
 
-    def startup
-      return unless missing_tables?
+  def startup
+    return unless missing_tables?
 
-      CREATE_QUERIES.each_pair do |table, create_query|
-        begin
-          connection.execute "DROP TABLE #{table}"
-        rescue SQLite3::SQLException => e
-          puts "e: #{e.inspect}"
-        end
-        connection.execute create_query
+    CREATE_QUERIES.each_pair do |table, create_query|
+      begin
+        connection.execute "DROP TABLE #{table}"
+      rescue SQLite3::SQLException => e
+        puts "e: #{e.inspect}"
       end
+      connection.execute create_query
     end
+  end
 
-    def where_clause(filters={})
-      debug {"where w/ filters: #{filters.inspect}"}
-      filters.empty? ? "" : " where #{filters.map{|k,v| "#{k} = '#{v}'" }.join(" and ")}"
-    end
+  def where_clause(filters={})
+    debug {"where w/ filters: #{filters.inspect}"}
+    filters.empty? ? "" : " where #{filters.map{|k,v| "#{k} = '#{v}'" }.join(" and ")}"
+  end
 
-    def config
-      require 'yaml'
-      return {} unless File.exists?(config_file)
-      YAML::load_file(config_file)
-    end
+  def config
+    require 'yaml'
+    return {} unless File.exists?(config_file)
+    YAML::load_file(config_file)
+  end
 
-    def connect_to_db
-      @db_file = config["question_bot"]["database"]
-      @connection = SQLite3::Database.new db_file
-    end
+  def connect_to_db
+    @db_file = config["question_bot"]["database"]
+    @connection = SQLite3::Database.new db_file
+  end
 end
 
 module BotCommander
@@ -378,7 +379,8 @@ module BotCommander
 
   # TODO: create a Message Class that encapsulates & handles all of this...
   def add_html message
-    message.gsub(/</,HTML_LT).gsub(/>/,HTML_GT).gsub(/\t/,HTML_TAB)
+    # message.gsub(/</,HTML_LT).gsub(/>/,HTML_GT).gsub(/\t/,HTML_TAB)
+    message
   end
 
   def strip_html message
@@ -400,7 +402,7 @@ module BotCommander
   def replace_special_chars(str)
     str.gsub(/[^0-9A-Za-z.\-]/, SPECIAL_CHAR_REPLACEMENT)
   end
-  
+
   def remove_invalid_chars(str)
     str.gsub(/^.*(\\|\/)/, '')
   end
@@ -413,8 +415,8 @@ module BotCommander
       "#{REGISTER_CMD}: some question?",
       "#{SHOW_CMD}: <id>|#{SHOW_CMD}: <id> #{ANSWERS_TOO}|#{SHOW_CMD}: <q_status>|#{SHOW_CMD}: <q_status> <owner>|#{SHOW_CMD}: <q_status> #{ANSWERS_TOO}",
       "#{ANSWER_CMD}: <id> an answer is.",
-      "#{CLOSE_CMD}: <id>",
-      "\t<q_status>: #{Q_TYPES.join(" | ")}",
+        "#{CLOSE_CMD}: <id>",
+        "\t<q_status>: #{Q_TYPES.join(" | ")}",
       "\t<owner>: #{MINE} | #{authorized.join(" | ")}"
     ]
   end
@@ -475,24 +477,32 @@ class Bot
 
   def start
     init
-    result = Net::TOC.new(user, pwd) do |message, buddy|
-      debug { "message: #{message}; buddy: #{buddy}" }
-      if authorized.member? buddy.screen_name
-        begin
-          message = strip_html(message)
-          process(message, buddy.screen_name) do |line|
-            # TBD: split line if it's too long
-            # TBD: discover the definition of: too long
-            buddy.send_im add_html(line)
+    #result = Net::TOC.new(user, pwd) do |message, buddy|
+    connection = Jabber::Simple.new(user, pwd)
+    while true do
+      result = connection.received_messages do |msg|
+        message = msg.body
+        buddy = msg.from.node+'@his-service.net'
+        puts "message: #{message}; buddy: #{buddy}"
+        debug { "message: #{message}; buddy: #{buddy}" }
+        if authorized.member? buddy
+          begin
+            message = strip_html(message)
+            process(message, buddy) do |line|
+              # TBD: split line if it's too long
+              # TBD: discover the definition of: too long
+              connection.deliver(buddy, add_html(line))
+            end
+          rescue Exception => e
+            connection.deliver(buddy, handle(e, message))
           end
-        rescue Exception => e
-          buddy.send_im handle(e, message)
+        else
+          connection.deliver(buddy, add_html(IGNORE_MESSAGE))
         end
-      else
-        buddy.send_im add_html(IGNORE_MESSAGE)
       end
+      debug { "result: #{result.inspect}" }
+      sleep 1
     end
-    debug { "result: #{result.inspect}" }
   rescue Exception => e
     puts handle(e)
   end

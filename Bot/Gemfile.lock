@@ -1,0 +1,34 @@
+GIT
+  remote: git@github.com:JayTeeSF/xmpp4r-simple.git
+  revision: 92e2cd0002ec3a9a38506527e1a3a2d622408626
+  specs:
+    xmpp4r-simple (0.8.8)
+      xmpp4r (>= 0.3.2)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    diff-lcs (1.1.3)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
+    sqlite3 (1.3.4)
+    sqlite3-ruby (1.3.3)
+      sqlite3 (>= 1.3.3)
+    xmpp4r (0.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rspec
+  rspec-core
+  rspec-expectations
+  rspec-mocks
+  sqlite3-ruby
+  xmpp4r-simple!

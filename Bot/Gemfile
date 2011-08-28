@@ -1,0 +1,27 @@
+source 'http://rubygems.org'
+gem 'sqlite3-ruby', :require => 'sqlite3'
+# gem 'net-toc' #<-- no longer connecting!
+#gem 'xmpp4r-simple', "~> 0.8.8" # <-- worked
+gem 'xmpp4r-simple', :git => 'git@github.com:JayTeeSF/xmpp4r-simple.git'
+
+group :test do
+  gem "rspec"
+  gem "rspec-core"
+  gem "rspec-expectations"
+  gem "rspec-mocks"
+end
+
+# Use unicorn as the web server
+# gem 'unicorn'
+
+# Deploy with Capistrano
+# gem 'capistrano'
+
+# To use debugger (ruby-debug for Ruby 1.8.7+, ruby-debug19 for Ruby 1.9.2+)
+# gem 'ruby-debug'
+# gem 'ruby-debug19'
+
+# Bundle the extra gems:
+# gem 'bj'
+# gem 'nokogiri'
+# gem 'aws-s3', :require => 'aws/s3'
