@@ -115,7 +115,8 @@ class DbRepo
       debug {"id: #{id.inspect}, text: #{text.inspect}"}
       questions[id] = {:text => text.dup} if text
     end
-    return ["no questions"] if questions.empty?
+    #return ["no questions"] if questions.empty?
+    return nil if questions.empty?
 
     get_comments ? append_comments(questions) : questions.map do |q_id,v|
       "#{q_id} => #{QUESTION_PREFIX} #{v[:text]} #{AUTHOR_PREFIX} #{question_author(q_id)}"
@@ -230,7 +231,12 @@ class DbRepo
 
   def where_clause(filters={})
     debug {"where w/ filters: #{filters.inspect}"}
-    filters.empty? ? "" : " where #{filters.map{|k,v| "#{k} = '#{v}'" }.join(" and ")}"
+    # filters.empty? ? "" : " where #{filters.map{|k,v| "#{k} = '#{v}'" }.join(" and ")}"
+    filters.empty? ? "" : " where #{to_clause(filters)}"
+  end
+
+  def to_clause(filters={})
+    filters.map{|k,v| v.is_a?(Hash) ? "#{k} #{v[:operator]} '#{v[:operand]}'" : "#{k} = '#{v}'" }.join(" and ")
   end
 
   def config
@@ -282,36 +288,27 @@ module BotCommander
   attr_reader :repo
   def init(base_path=nil)
     @repo = DbRepo.new(:verbose => verbose)
-    # @repo = GitRepo.new("question_bot_repo" base_path)
-    # repo.init
-    # @next_question_id = 1 + Dir[@db.working_dir + "/**/*.#{FILE_SUFFIX}"].count
+  end
+
+  def clear_questions
+    @questions = nil
+  end
+
+  def questions filters={}
+    @questions ||= repo.find_all_questions_by(filters)
+  end
+
+  def already_asked? question_search
+    questions(question_search) && !questions.empty?
   end
 
   # Filters:
   #   :id => ...
   #   :owner => ...
   #   :status => ...
-  def show_questions filters={}
+  def show_questions question_filter={}
     debug {"got 'show_questions' filters: #{filters.inspect}"}
-    questions = repo.find_all_questions_by(filters)
-    questions.empty? ? [NO_QUESTIONS_FOUND] : questions
-
-    # results = files.map do |filename|
-    #   _id_and_descr = id_and_description filename
-    #   debug { filters[:answers_too] ? "filters TOO" : "NO FILTERS" }
-    #
-    #   questions = extract_questions(filename, filters[:answers_too])
-    #
-    #   unless _id_and_descr || questions
-    #     nil
-    #   else
-    #     [_id_and_descr + " => " + questions.first] +
-    #     questions[1..-1].collect do |question|
-    #       "\t => " + question
-    #     end
-    #   end
-    # end.compact
-    # return results.empty? ? [NO_QUESTIONS_FOUND] : results
+    already_asked?(question_filter) ?  questions : [NO_QUESTIONS_FOUND]
   end
 
   def close_question filters={}
@@ -322,9 +319,18 @@ module BotCommander
   end
 
   def register_question question, owner
-    repo.store_question(question, owner)
-
-    [REGISTERED_OK]
+    # if the question has already been asked, we should attempt to return its answer
+    question_filter = {}
+    question_filter[:answers_too] = true
+    question_filter[:owner] = owner #sanitize_filename(whose) if authorized.member?(whose)
+    question_filter[:status] = "*"
+    question_filter[:text] = {:operator => "like", :operand => "%#{question}%"}
+    if already_asked? question_filter
+      show_questions question_filter
+    else
+      repo.store_question(question, owner)
+      [REGISTERED_OK]
+    end
   end
 
   def answer_question answer, author, filters={}
@@ -336,6 +342,7 @@ module BotCommander
   def process cmd, owner
     debug { "got: #{cmd} from: #{owner}" }
     filters = {}
+    clear_questions
 
     case cmd
     when /^#{HELP_CMD}\s*$/i
@@ -483,7 +490,7 @@ class Bot
       result = connection.received_messages do |msg|
         message = msg.body
         buddy = msg.from.node+'@his-service.net'
-        puts "message: #{message}; buddy: #{buddy}"
+        # puts "message: #{message}; buddy: #{buddy}"
         debug { "message: #{message}; buddy: #{buddy}" }
         if authorized.member? buddy
           begin
