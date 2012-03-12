@@ -1,0 +1,4 @@
+instead of simply crontab -l for the current user (assuming you have
+permission) check:
+ /var/spool/cron
+

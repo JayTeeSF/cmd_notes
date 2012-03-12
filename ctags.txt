@@ -1,0 +1,2 @@
+# /usr/local/Cellar/ctags/5.8/bin/ctags --extra=+f -R *
+/usr/local/Cellar/ctags/*/bin/ctags --extra=+f -R *

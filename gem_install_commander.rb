@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
+
 require 'rubygems'
 require 'ruby-debug'
+
 class GemInstallCommander
   attr_reader :gem_list
 
@@ -858,11 +860,161 @@ module JtOkGems
   end
 end
 
+module BePreviewGems
+  extend self
+  def self.included(base)
+    base.extend ClassMethods
+    base.extend GemListToArrayOfHashes
+  end
+
+  module ClassMethods
+  def gem_list
+    list =<<-EOL
+actionmailer (3.1.0, 2.3.4)
+actionpack (3.1.0, 2.3.4, 1.13.6)
+actionwebservice (1.2.6)
+activemodel (3.1.0)
+activerecord (3.1.0, 2.3.4, 1.15.6)
+activeresource (3.1.0, 2.3.4)
+activesupport (3.1.0, 2.3.4, 1.4.4)
+arel (2.2.1)
+bcrypt-ruby (3.0.1)
+BlueCloth (1.0.0)
+bson_ext (1.3.1)
+builder (3.0.0, 2.1.2)
+bundler (1.0.18, 1.0.14, 1.0.12)
+capistrano (2.5.9)
+cgi_multipart_eof_fix (2.5.0)
+chronic (0.2.3)
+cobravsmongoose (0.0.2)
+columnize (0.3.1)
+daemon_controller (0.2.6)
+daemons (1.0.10)
+em-redis (0.2.2)
+erubis (2.7.0)
+eventmachine (0.12.10)
+fastercsv (1.5.0)
+fastthread (1.0.7)
+feed-normalizer (1.5.1)
+ferret (0.11.6)
+ffi (0.6.0)
+gdb.rb (0.1.7)
+gem_plugin (0.2.3)
+geoip_city (0.2.0)
+highline (1.5.1)
+hike (1.2.1)
+hoe (2.3.3, 1.12.2)
+hpricot (0.6)
+httpclient (2.1.5.2)
+i18n (0.6.0)
+json (1.1.9)
+json_pure (1.1.9)
+linecache (0.43)
+mail (2.3.0)
+memcache-client (1.7.5)
+mime-types (1.16)
+mongrel (1.1.5)
+mongrel_cluster (1.0.5)
+multi_json (1.0.3)
+mysql (2.8.1, 2.7)
+net-scp (1.0.2)
+net-sftp (2.0.2)
+net-ssh (2.0.15)
+net-ssh-gateway (1.0.1)
+nokogiri (1.4.3.1, 1.3.3, 1.2.3)
+passenger (3.0.9, 2.2.5)
+polyglot (0.3.2)
+production_log_analyzer (1.5.1)
+rack (1.3.3, 1.0.0)
+rack-cache (1.0.3)
+rack-mount (0.8.3)
+rack-ssl (1.3.2)
+rack-test (0.6.1)
+rails (3.1.0, 2.3.4)
+rails_analyzer_tools (1.4.0)
+railties (3.1.0)
+rake (0.8.7)
+rcov (0.8.1.2.0)
+rdoc (3.9.4)
+RedCloth (4.2.2)
+redis (0.1.2)
+redis-namespace (0.2.1)
+resque (1.4.0)
+rjb (1.2.6)
+rmagick (1.15.10)
+ruby-debug (0.10.3)
+ruby-debug-base (0.10.3)
+ruby-gpgme (1.0.7)
+rubyforge (2.0.3)
+rubygems-update (1.3.6)
+rubyzip (0.9.1)
+rufus-tokyo (1.0.7)
+simple-rss (1.2)
+sinatra (0.9.4)
+soap4r (1.5.8)
+sources (0.0.1)
+sprockets (2.0.0)
+sqlite3-ruby (1.2.5)
+SyslogLogger (1.4.0)
+SystemTimer (1.2.2)
+thor (0.14.6)
+tilt (1.3.3)
+tokyocabinet (1.29)
+treetop (1.4.10)
+tzinfo (0.3.29)
+vegas (0.1.8, 0.1.4)
+yajl-ruby (0.7.6, 0.7.0)
+ZenTest (4.1.4)
+    EOL
+  end
+  end
+end
+module PreviewVendoredGemsPlus
+  def self.append_features(base)
+    base.class_eval do
+      include BePreviewGems
+    end
+
+    base.extend ClassMethods
+  end
+  module ClassMethods
+
+    def vendored_rails_gem
+      {'rails' => ['2.3.5']}
+    end
+
+    def vendored_gems
+      [
+        vendored_rails_gem,
+        {'addressable' => ['2.1.2']},
+        {'calendar_date_select' => ['1.15']},
+        {'hoptoad_notifier' => ['2.4.8']},
+        {'json' => ['1.4.6']},
+        {'mustache' => ['0.12.0']},
+        {'newrelic_rpm' => ['2.9.5']},
+        {'rack' => ['1.0.1']},
+        {'redis' => ['2.1.1']},
+        {'redis-namespace' => ['0.8.0']},
+        {'resque' => ['1.10.0']},
+        {'rspec' => ['1.3.0']},
+        {'ruby-progressbar' => ['0.0.9']},
+        {'sinatra' => ['1.0']},
+        {'vegas' => ['0.1.8']},
+      ]
+    end
+
+    def canonical_gem_hash_array
+      super + vendored_gems 
+    end
+  end
+end
+
 class GemInstallCommander
   # normal:
   # include ChemistryVendoredGemsPlus
   # new as of july 6, 2011
-  include JtOkGems
+  #include JtOkGems
+  include PreviewVendoredGemsPlus
 end
 
 gems = nil

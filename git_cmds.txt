@@ -1,3 +1,19 @@
+Delete a remote branch: git push <remote> :branch_name
+ e.g.
+ git push jt :lpf_ploid_support
+
+# checking out a remote branch
+git checkout -b remote_branch # this typically pulls the branch from origin/remote_branch
+# the verbose approach:
+git checkout -b rails_bundler_2.3.14_9 jt/rails_bundler_2.3.14_9
+
+# pushing a branch to a remote:
+git push remote local_branch_name # create local_branch_name on the remote server
+git push remote local_branch_name:remote_branch_name # rename it on the remote end
+
+# search git for commit's that contain a word or phrase:
+git log -S'slim'
+
 # grep for a patch in the repository
 git log -p -5 --grep=slim -- db/migrate/
   # -p (patch, the +- lines)

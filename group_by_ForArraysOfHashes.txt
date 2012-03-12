@@ -1,0 +1,11 @@
+a_o_h = [{:date=>"11/20/2009", :foo=>"dafd"}, {:date=>"11/20/2009", :foo=>"bbb"}, {:date=>"11/11/2011", :foo=>"dafd"}, {:date=>"11/11/2011", :foo=>"bbb"}]
+
+
+module EnumerableExtensions
+  extend self
+  def group_hashes_by a_o_h, key
+    a_o_h.reduce({}) {|m,h| k = h[key]; m.has_key?(k) ? m[k] << h : m[k] = [h]; m}
+  end
+end
+
+EnumerableExtensions.group_hashes_by a_o_h, :date

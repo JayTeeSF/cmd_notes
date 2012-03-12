@@ -1,0 +1,1 @@
+mdls -name kMDItemCFBundleIdentifier /Applications/Safari.app

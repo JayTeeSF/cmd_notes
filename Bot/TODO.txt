@@ -1,0 +1,6 @@
+Hmm...
+  o  if exact match, don't register new question
+  o  extract key words from question, if match, still register, but,
+report potential matches
+  o  enable merging questions (intelligence via compression)
+  o  enable API expansion (some kind of plugin interface)

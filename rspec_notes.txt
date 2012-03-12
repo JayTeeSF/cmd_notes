@@ -1,0 +1,14 @@
+#thx to: http://www.slideshare.net/andrea.reginato/rspec-2-best-practices
+
+# incorrect
+it { assigns("message").should match /Foo/ }
+it { assigns("message").creator.should match /Bar/ }
+
+# correct
+subject { assigns("message") }
+it { should match /Foo/ }
+it(:creator) { should match /Bar/ }
+
+# unfortunately its and subject are suspect
+# rspec creator wished (on Twitter) that he never exposed "subject"
+# and its is moving out of rspec-core
