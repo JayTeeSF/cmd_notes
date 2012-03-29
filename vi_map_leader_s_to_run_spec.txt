@@ -1,5 +1,5 @@
 map \s :w\|!rspec % <cr>
 
 using Janus, I can of course, simply:
-cmd + shift + r on a rspec runs that spec
-cmd  + shift + l runs that it block
+cmd + shift + r runs that (entire?) spec
+cmd  + shift + l runs that line
