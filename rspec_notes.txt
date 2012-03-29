@@ -1,3 +1,8 @@
+# zoodles-block for env-specific testing:
+run_with_rails_env( 'production' ) do
+end
+
+
 #thx to: http://www.slideshare.net/andrea.reginato/rspec-2-best-practices
 
 # incorrect
