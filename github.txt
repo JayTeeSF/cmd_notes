@@ -1,0 +1,11 @@
+find out what changed from one version to the next
+(1) goto repo
+(2) under the "Branches" button, find the tags
+(3) goto the older tag
+(4) modify the url (change "/tree" to "compare" ...make it look like this:
+https://github.com/rspec/rspec-rails/compare/v2.9.0...v2.10.0
+(see all the commits between those two versions.)
+
+press T and you can search for a particular file in a github repo
+
+edit files (that already exist) within a git-repo directly from the web
