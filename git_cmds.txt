@@ -1,3 +1,6 @@
+# use opendiff to compare the changes in my working directory to what's in the repo...
+git difftool Gemfile
+
 Delete a remote branch: git push <remote> :branch_name
  e.g.
  git push jt :lpf_ploid_support
