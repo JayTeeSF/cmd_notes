@@ -1,0 +1,9 @@
+Ok, it's my second time failing prey to this one...
+When you want to test a gem that you are building, and you're wondering
+why the new code you wrote isn't getting picked-up by rspec, remember:
+the __blah__.gemspec file typically looks for the files _in_ git.
+i.e.:
+  s.files         = `git ls-files`.split("\n")
+
+As such (if you read careful) you see that you need to commit your files
+to git before they'll be visible to the gem!
