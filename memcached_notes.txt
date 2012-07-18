@@ -6,3 +6,16 @@ Or start it manually:
 
 Add "-d" to start it as a daemon.
 
+# dev:
+memcached -vv -p 11211 -l 0.0.0.0 -m 750 -c 1024 # not a daemon
+
+prod:
+memcached -d -p 11211 -l 0.0.0.0 -m 750 -c 1024 -u memcached -P
+/var/run/memcached/memcached-11211.pid
+
+# 750 mb is not much!
+
+telnet localhost 11211
+> stats
+
+# see memcached_keys.sh

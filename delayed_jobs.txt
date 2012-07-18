@@ -1,0 +1,4 @@
+./script/production/cap dj:restart
+
+according to ey-cap gem this job restarts the monit group for those
+processes!

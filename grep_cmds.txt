@@ -1,0 +1,5 @@
+when you just want the filename:
+grep -rFls "created_at" app
+app/models/kid_drawing.rb
+app/views/admin/kid_drawing/edit.html.erb
+app/views/kid/art/_portfolio_drawing.html.erb
