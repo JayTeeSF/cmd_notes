@@ -1,0 +1,4 @@
+check the unicorn queues ...see if requests are backing-up:
+unicorn_socket = '/var/...'
+ruby -rubygems -e "require 'raindrops'; puts
+Raindrops::Linux.unix_listener_stats([$unicorn_socket]).inspect" 
