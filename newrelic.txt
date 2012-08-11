@@ -1,0 +1,8 @@
+# config 
+/etc/newrelic/nrsysmond.cfg
+
+# start
+/usr/local/bin/nrsysmond -c /etc/newrelic/nrsysmond.cfg
+
+# check output
+tail -f log/newrelic_agent.log 

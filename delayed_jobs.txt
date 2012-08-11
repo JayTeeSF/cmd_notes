@@ -2,3 +2,21 @@
 
 according to ey-cap gem this job restarts the monit group for those
 processes!
+
+sudo vi /etc/monit.d/delayed_job.monitrc
+sudo monit reload
+
+ps -eo size,pid,command --sort -size | grep ruby | grep -v grep | awk '{
+hr=$1/1024 ; printf("%13.2f Mb ",hr) } { for ( x=2 ; x<=NF ; x++ ) {
+printf("%s ",$x) } print "" }'
+
+CPUPROFILE=/tmp/my_app_profile RUBYOPT="-r`gem which perftools | tail
+-1`" ruby /data/inquisitiveminds/current/script/rails runner -e
+production "require 'delayed/command';Delayed::Command.new([]).run"
+
+file /engineyard/bin/dj
+
+ps -eafwww | grep delay
+lsof -nPp 20721
+ps -eafwww | grep delay
+clear; strace -cp 20721
