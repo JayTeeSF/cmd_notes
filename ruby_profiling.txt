@@ -1,0 +1,1 @@
+pprof.rb --gif /tmp/profile_html_output_20120813165218.html > foo.gif
