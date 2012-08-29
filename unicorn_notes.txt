@@ -1,3 +1,7 @@
+restart them quickly w/ our capistrano task:
+./script/production/cap deploy:fast_restart # which essentially calls unicorn.restart
+# via: run "/engineyard/bin/app_inquisitiveminds deploy"
+
 check the unicorn queues ...see if requests are backing-up:
 unicorn_socket = '/var/...'
 ruby -rubygems -e "require 'raindrops'; puts
