@@ -1,7 +1,7 @@
 map \s :w\|!rspec % <cr>
 
 # ...this just in, run a single spec with:
-:map ,r :w\|exec ":!rspec % -l " . line('.')
+:map ,r :w\|exec ":!rspec % -l " . line('.') <cr>
 
 of course, using Janus, I can simply:
 cmd + shift + r runs that (entire?) spec
