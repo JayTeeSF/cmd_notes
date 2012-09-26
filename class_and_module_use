@@ -1,0 +1,3 @@
+# Gary (from Destroyallsoftware.com) came-up w/ a shell-based version of this
+# I modified it w/ Ruby:
+find app lib -name '*.rb' | xargs ruby -ne 'BEGIN{h={};};if matches = $_.match(/^\s*(module|class)\s+(\w+\S+?)\s+(.*)/); h[matches[2]] ||= 0; h[matches[2]] += 1; end; END{puts h.keys}' | while read class; do echo "`grep -rl "\b$class\b" app lib --include="*.rb" | wc -l` $class"; done | sort -n
