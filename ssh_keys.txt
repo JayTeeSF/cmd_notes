@@ -1,0 +1,3 @@
+# get your public key file into the authorized list on a remote-server
+# ...of course, you'll need the pwd to complete this command
+cat ~/.ssh/id_*.pub | ssh user@remote-server 'cat >> .ssh/authorized_keys'
