@@ -5,3 +5,16 @@ end_time = Time.now.to_f
 elapsed_time = end_time - begin_time
 Rails.logger.debug "elapsed time: #{elapsed_time}" # => e.g. elapsed time: 0.28682804107666 seconds
 
+real benchmarking:
+require "benchmark"
+  
+ARY = [
+  {:name => "foo", :description => "bar baz foo-bar-baz"},
+  {:name => "bar", :description => "foo bar bar-baz-foo"},
+  {:name => "baz", :description => "baz foo baz-foo-bar"},
+]
+
+Benchmark.bmbm(7) do |x|
+  x.report("approach-1")   { (1..10000).each { |i| result = []; result |= ARY } }
+  x.report("approach-2")   { (1..10000).each { |i| result = ARY.uniq } }
+end
