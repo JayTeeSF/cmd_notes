@@ -1,0 +1,30 @@
+# if you have server permissions:
+SELECT a,b,a+b INTO OUTFILE '/tmp/test_table.csv'
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY '\n'
+  FROM test_table;
+
+SELECT * INTO OUTFILE '/tmp/app_visits.csv'
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY '\n'
+  FROM app_visits;
+
+SELECT * INTO OUTFILE '/tmp/link_visits.csv'
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY '\n'
+  FROM link_visits;
+
+SELECT * INTO OUTFILE '/tmp/sessions.csv'
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY '\n'
+  FROM sessions;
+
+LOAD DATA INFILE '/tmp/app_visits.csv' INTO TABLE app_visits
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY '\n';
+  IGNORE 1 LINES; # not sure about this...
+
+or 
+mysqlimport --delete -uroot db_name /tmp/app_visits.csv
+
+
