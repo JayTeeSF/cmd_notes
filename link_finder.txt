@@ -1,0 +1,3 @@
+I know there are softlinks pointing to my directory, but I'm not sure
+where ...slow, but effective solution:
+sudo find / -type l  -exec ls -l {} \; | grep target_directory
