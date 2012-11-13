@@ -1,0 +1,19 @@
+# Situation: Two employees systems' were completing our app's specs in wildly different times.
+
+# Motiating Question: How are their systems different (i.e. memory/cpu or software)?
+
+# Key insight came from comparing:
+# Ruby Perf:
+time ruby -e "count = 0; while(count < 100000000); count = count + 1;
+end; puts count"
+
+# Shell Perf:
+time bash -c 'i=0;while [ $i -le 1000000 ]; do i=$(($i+1)); done; echo $i;'
+
+# Perl Perf:
+time perl -e '$count = 0; while ($count < 10000000) { $count ++; } print $count;'
+
+# Given that Shell & Perl tests ran in the same/similar times, it was
+# easy to resolve:
+
+# Solution: recompile Ruby with proper cflags (see rvm cflags)
