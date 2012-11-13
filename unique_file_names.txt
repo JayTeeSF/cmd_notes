@@ -1,0 +1,13 @@
+# in Ruby you can
+require 'tempfile'
+new_file = Tempfile.new(name, tmp_dir)
+# to create a uniquely named temporary file in a directory of your choosing
+
+# however, as soon as you remove all references to that object
+new_file = nil
+
+# Ruby will (eventually) garbage collect & remove the file!
+
+# SO, if you want to create a uniquely named file that you can, for example, persists across processes, try:
+
+file_path =  Dir::Tmpname.create( name, tmp_dir ) {}
