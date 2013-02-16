@@ -5,6 +5,11 @@ find out what changed from one version to the next
 (4) modify the url (change "/tree" to "compare" ...make it look like this:
 https://github.com/rspec/rspec-rails/compare/v2.9.0...v2.10.0
 (see all the commits between those two versions.)
+(4*) correction:
+the "v" part of the tag may not be used (at least on some repos):
+https://github.com/capistrano/capistrano/compare/2.13.5...2.14.1
+however, older tags w/ dashes seem to require it:
+https://github.com/capistrano/capistrano/compare/v2-5-3...2.13.5
 
 press T and you can search for a particular file in a github repo
 
