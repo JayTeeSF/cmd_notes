@@ -1,0 +1,26 @@
+Thx to Gary B: blog.extracheese.org/2010/12/rebase-is-safe.html
+
+I recalled how-to take shell-cmd output and pipe it into a
+while-loop-variable:
+
+↪ (set -e; ls |
+> while read foo; do
+> echo "Got file: $foo"
+> done)
+
+more generally:
+(set -e;
+shell_cmd | 
+while read shell_cmd_varaible; do
+  another_shell_cmd( $shell_cmd_variable )
+done)
+
+useful example (from the aforementioned blog), to verify the commits in
+your git repo:
+(set -e;
+  git rev-list --reverse origin/master..master |
+    while read rev; do
+      echo "Checking out: $(git log --oneline -1 $rev)";
+      git checkout -q $rev;
+      python runtests.py;
+    done)
