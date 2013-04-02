@@ -1,0 +1,20 @@
+neal ford (
+http://my.safaribooksonline.com/video/software-engineering-and-development/agile-development/9781449314439
+)
+
+(borrowing from ???) suggests the following approach to learning a new
+library:
+(1) download library
+(2) read docs
+(3) write your own specs ...in order to exercise the code and see it do
+what the docs "claim"
+
+(4) save those specs
+
+later [ when version2 comes-out ]
+(a) download the new library
+(b) run your specs against it
+(c) as opposed to reading (inevitably) partial "release notes", simply
+look for spec failures!
+
+ 
