@@ -1,0 +1,5 @@
+create ~/.gitignore
+# setup git to use it
+git config --global core.excludesfile ~/.gitignore
+
+# becareful to not stomp on files that a particular project DOESN'T want to ignore :-)
