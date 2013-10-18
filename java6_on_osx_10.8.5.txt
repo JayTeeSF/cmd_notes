@@ -1,0 +1,14 @@
+
+# Remove Jdk7 --if it's still there--
+  cd /Library/Internet\ Plug-Ins/
+  sudo rm -rf JavaAppletPlugin.plugin
+  cd /Library/PreferencePanes/
+  sudo rm -rf JavaControlPanel.prefPane
+# after copying JavaForOSX.pkg from within ~/Downloads/JavaForOSX2013-05.dmg
+sudo installer -pkg ~/Downloads/JavaForOSX.pkg -target /
+
+# update JAVA_HOME and JDK_HOME in .bash_profile
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/1.6.0_65-b14-462.jdk/Contents/Home
+export JDK_HOME=/Library/Java/JavaVirtualMachines/1.6.0_65-b14-462.jdk/Contents/Home
+# can't use: `/usr/libexec/java_home`
+export JAVA_HOME=`/usr/libexec/java_home`
