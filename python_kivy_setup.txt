@@ -1,0 +1,30 @@
+  513  brew install python
+  518  curl http://ctabustracker.com/bustime/map/getBusesForRoute.jsp?route=22 > bus_data.xml
+  527  python --version
+  #529  brew install kivy
+  531  pip install cython
+  #532  pip install pygame
+  534  brew install SDL
+  # 535  CFLAGS='-I/usr/local/include/SDL' pip install pygame
+  536  pip install hg+http://bitbucket.org/pygame/pygame
+  537  pip install kivy
+  538  python -c 'import kivy'
+  542  cd ~/dev/
+  542  mkdir kidmode
+  543  cd kidmode/
+  544  vi __main__.py
+  545  zip ../kidmode.zip *
+  549  cd ..
+  563  python kidmode.zip 
+  613  cd kidmode
+  # 575  zip -r kivy_kidmode.zip kivy_kidmode
+  613  git init .
+  614  git status
+  615  git add .
+  616  git commit -m "initial commit: hello-world kivy window"
+  621  echo "*.pyc" >> .gitignore
+  622  more .gitignore 
+  623  git status
+  624  git add .gitignore
+  625  git commit -m "ignore .pyc files"
+  633  echo 'create zipfile as: zip ../kidmode.zip *' > README.txt

@@ -1,0 +1,113 @@
+# http://www.youtube.com/watch?v=RrPZza_vZ3w
+# curl http://ctabustracker.com/bustime/map/getBusesForRoute.jsp?route=22 > bus_data.xml
+<?xml version="1.0"?>
+
+
+
+
+
+			<buses rt="22">
+		
+		<time>1:53 AM</time>
+
+	        	<bus>
+	        		<id>4160</id>
+	        		<rt>22</rt>
+	        		
+	        		<d>North Bound</d>
+	        		<dd>Northbound</dd>
+	        		<dn>NNW</dn>
+	        		<lat>41.920129675614206</lat>
+	            	<lon>-87.6373699255157</lon>
+	            	<pid>5421</pid>
+	            	<pd>Northbound</pd>
+	            	<run>P282</run>
+	            	<fs>Howard</fs>
+	            	<op>52210</op>
+	            	<dip>19853</dip>
+	            	<bid>7318562</bid>
+	            	<wid1>0P</wid1>
+	            	<wid2>282</wid2>            	
+	            </bus>
+
+	        	<bus>
+	        		<id>1905</id>
+	        		<rt>22</rt>
+	        		
+	        		<d>South East Bound</d>
+	        		<dd>Southbound</dd>
+	        		<dn>SE</dn>
+	        		<lat>41.95314945894129</lat>
+	            	<lon>-87.66117320341222</lon>
+	            	<pid>3936</pid>
+	            	<pd>Southbound</pd>
+	            	<run>P258</run>
+	            	<fs>Harrison</fs>
+	            	<op>1287</op>
+	            	<dip>25656</dip>
+	            	<bid>7322299</bid>
+	            	<wid1>0P</wid1>
+	            	<wid2>258</wid2>            	
+	            </bus>
+
+	        	<bus>
+	        		<id>1376</id>
+	        		<rt>22</rt>
+	        		
+	        		<d>South Bound</d>
+	        		<dd>Southbound</dd>
+	        		<dn>S</dn>
+	        		<lat>41.902848379952566</lat>
+	            	<lon>-87.63152313232422</lon>
+	            	<pid>3936</pid>
+	            	<pd>Southbound</pd>
+	            	<run>P257</run>
+	            	<fs>Harrison</fs>
+	            	<op>38640</op>
+	            	<dip>46026</dip>
+	            	<bid>7322298</bid>
+	            	<wid1>0P</wid1>
+	            	<wid2>257</wid2>            	
+	            </bus>
+
+	        	<bus>
+	        		<id>1792</id>
+	        		<rt>22</rt>
+	        		
+	        		<d>North Bound</d>
+	        		<dd>Northbound</dd>
+	        		<dn>NNW</dn>
+	        		<lat>42.000450463130555</lat>
+	            	<lon>-87.6713446255388</lon>
+	            	<pid>5421</pid>
+	            	<pd>Northbound</pd>
+	            	<run>P260</run>
+	            	<fs>Howard</fs>
+	            	<op>50377</op>
+	            	<dip>51229</dip>
+	            	<bid>7322801</bid>
+	            	<wid1>0P</wid1>
+	            	<wid2>260</wid2>            	
+	            </bus>
+
+	        	<bus>
+	        		<id>4143</id>
+	        		<rt>22</rt>
+	        		
+	        		<d>North Bound</d>
+	        		<dd>Northbound</dd>
+	        		<dn>N</dn>
+	        		<lat>42.0105094909668</lat>
+	            	<lon>-87.67422570122613</lon>
+	            	<pid>5421</pid>
+	            	<pd>Northbound</pd>
+	            	<run>P281</run>
+	            	<fs>Howard</fs>
+	            	<op>54246</op>
+	            	<dip>54999</dip>
+	            	<bid>7318571</bid>
+	            	<wid1>0P</wid1>
+	            	<wid2>281</wid2>            	
+	            </bus>
+		
+		</buses>
