@@ -1,0 +1,20 @@
+Download the 
+ o  TideSDK Developer (console app)
+ o  TideSDK API (the zip file that has 3 top level dirs: sdk, modules, ???)
+
+The challenge: where to put the SDK stuff
+move it to /Library/Application\ Support/TideSDK
+(old articles online refer to 
+"/Library/Application Support/Titanium" directory
+and the
+tibuild.py (command)
+
+But the new command is: tidebuilder.py
+
+Simply type:
+python tidebuilder.py --dest=. --type=bundle /Users/jthomas/dev/TideSDK/desktop
+
+Which means:
+ create the .app bundle in the current (dest) directory
+ make it of type "bundle" (vs. their old (paid) network/cloud option)
+ and then supply the path to the root of your app's folder
