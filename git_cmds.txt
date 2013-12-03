@@ -1,3 +1,9 @@
+# what's new on this branch vs. the remote repo:
+git log origin/master..
+
+# what's new in the remote that's not on this branch:
+git log ..origin/master
+
 # use opendiff to compare the changes in my working directory to what's in the repo...
 git difftool Gemfile
 
