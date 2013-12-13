@@ -1,0 +1,40 @@
+# Given:
+#prompt> cat ~/.mytop
+pass=<pwd>
+db=mysql
+delay=2
+idle=0
+sort=1
+
+# run:
+#prompt> sudo mytop -u root
+
+# type "f" to get a full query
+# enter the "Id" of the query you want to see (might have to press 'f' quickly)
+
+# then press 'e' to get an "Explain" plan on that query
+
+# similarly, press "k" followed by the Id, to kill a query
+
+
+
+### Sample Output:
+MySQL on localhost (5.0.51-log)                                                                  up 329+06:44:22 [08:16:23]
+ Queries: 10.6G  qps:  401 Slow:    2.0M         Se/In/Up/De(%):    72/04/05/01
+             qps now:  175 Slow qps: 1.9  Threads:   50 (  32/  36) 64/04/09/03
+ Key Efficiency: 99.8%  Bps in/out: 74.0k/ 1.2M   Now in/out: 36.8k/285.6k
+
+      Id      User         Host/IP         DB      Time    Cmd Query or State
+      --      ----         -------         --      ----    --- ----------
+ 3752410 iminds_db     tm25-s00180 inquisitiv         5  Query SELECT `book_pages`.* FROM `book_pages` WHERE `book_pages`.`
+ 3752437 iminds_db     tm25-s00177 inquisitiv         5  Query SELECT `apps`.* FROM `apps` WHERE (apps.allowed = 1 AND apps
+ 3749556 iminds_db     tm25-s00251 inquisitiv         3  Query SELECT `delayed_jobs`.* FROM `delayed_jobs` WHERE `delayed_j
+ 3749902 iminds_db     tm25-s00199 inquisitiv         3  Query SELECT `delayed_jobs`.* FROM `delayed_jobs` WHERE `delayed_j
+ 3752412 iminds_db     tm25-s00178 inquisitiv         3  Query SELECT `apps`.* FROM `apps` WHERE (apps.allowed = 1 AND apps
+ 3749560 iminds_db     tm25-s00251 inquisitiv         2  Query SELECT `delayed_jobs`.* FROM `delayed_jobs` WHERE `delayed_j
+ 3749905 iminds_db     tm25-s00199 inquisitiv         2  Query SELECT `delayed_jobs`.* FROM `delayed_jobs` WHERE `delayed_j
+ 3735925 iminds_db     tm25-s00179 inquisitiv         1  Query SELECT `kid_content_app_visits`.* FROM `kid_content_app_visi
+ 3749445 iminds_db     tm25-s00174 inquisitiv         1  Query SELECT `books`.* FROM `books` INNER JOIN `book_users` ON `bo
+ 3749507 iminds_db     tm25-s00182 inquisitiv         1  Query SELECT `kids`.* FROM `kids` WHERE `kids`.`user_id` = 6552625
+ 3749538 iminds_db     tm25-s00175 inquisitiv         1  Query SELECT `users`.* FROM `users` WHERE `users`.`remember_token`
+ 3749555 iminds_db     tm25-s00251 inquisitiv         1  Query SELECT `delayed_jobs`.* FROM `delayed_jobs` WHERE `delayed_j
