@@ -1,0 +1,62 @@
+# Issue: wanted to install (old) Mysql5.1 on my mac (for Zoodles tests to pass):
+
+brew install
+https://raw.github.com/Homebrew/homebrew-versions/master/mysql51.rb
+
+# follow the instructions:
+unset TMPDIR
+
+# not sure if it’s necessary, but I created the missing socket:
+ls -lrt /tmp/mysql.sock
+touch /tmp/mysql.sock
+
+# At which point I performed the second instruction:
+/usr/local/Cellar/mysql51/5.1.73/bin/mysql_install_db
+
+# See if it's running:
+ps -eafwww | grep mysql
+
+# IF not, start it (per the instructions):
+cd /usr/local/Cellar/mysql51/5.1.73 ; /usr/local/Cellar/mysql51/5.1.73/bin/mysqld_safe &
+
+# Update your PATH (env-var):
+/usr/local/Cellar/mysql51/5.1.73/bin
+
+# ensure you can connect:
+mysql -uroot
+
+
+# Creativity:
+
+# install the current version of mysql:
+brew install mysql
+
+#It shouldn't 'brew link' cuz the old version is currently setup & running
+
+# then link the 51 files and brew switch:
+cd /usr/local/Cellar/mysql
+ln -s ../mysql51/5.1.73 .
+
+brew switch mysql 5.1.73
+
+# if you already had Rails setup:
+cdw # alias for cd’ing to my <rails_root> directory
+
+gem uninstall mysql2
+
+# then reinstall:
+bundle install
+# re-create all db's for rails
+cdw # alias for cd’ing to my <rails_root> directory
+rake db:create:all
+
+# migrate all dbs for rails
+RAILS_ENV=production rake db:migrate
+RAILS_ENV=staging rake db:migrate
+RAILS_ENV=test rake db:migrate
+rake db:migrate
+
+# get staging data (for dev-env):
+./script/development/import 
+
+
