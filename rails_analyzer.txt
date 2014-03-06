@@ -1,0 +1,53 @@
+vi config/initializers/<the first>.rb
+  puts caller
+
+find the railtie gem's engine.rb's for loop that loads your
+initializers:
+
+# before
+    initializer :load_config_initializers do
+      config.paths["config/initializers"].existent.sort.each do |initializer|
+        load(initializer)
+      end
+    end
+
+# after
+    initializer :load_config_initializers do
+      config.paths["config/initializers"].existent.sort.each do |initializer|
+        stamp(:before, "#{File.basename(initializer)}")
+        load(initializer)
+        stamp(:after, "#{File.basename(initializer)}")
+      end
+    end
+
+# write supporting code (hack'ed below):
+vi config/environment.rb
+
+$start_time = Time.now.to_f
+
+def after_stamp(key)
+  after_time = Time.now.to_f
+  total_elapsed_time = after_time - $start_time
+  elapsed_time = after_time - time_before(key)
+  puts "#{[total_elapsed_time, elapsed_time].join(', ')}: #{key}"
+end
+
+def before_stamp(key)
+  before_time = Time.now.to_f
+  set_time_before(key, before_time)
+end
+
+def time_before(key)
+  unless $times
+    $times = {}
+  end
+  $times.delete(key)
+end
+
+def set_time_before(key, value)
+  unless $times
+    $times = {}
+  end
+  $times[key] = value
+end
+
