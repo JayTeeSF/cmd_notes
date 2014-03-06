@@ -1,0 +1,10 @@
+# issue, don't want to keep typing your password to ssh to a system
+# don't want to have to cat ~/.ssh/id.pub | pbcopy
+# and then ssh to the server and paste that id to 
+# ~/.ssh/authorized_keys
+
+# instead use one cmd:
+brew install ssh-copy-id
+
+ssh-copy-id <user>@<host>
+password: <-- type your password one last time :-)
