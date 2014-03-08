@@ -1,0 +1,23 @@
+### Rails 3.2
+
+# window 1:
+app.url_options[:host] = "localhost"
+url = app.url_for( :controller => '/home/marketing', :action => 'pricing' )
+
+# in a separate window...
+# window 2:
+# (after starting nginx, memcached & redis)
+rails s unicorn
+
+# window 1:
+app.get( url )
+ => 200
+
+### Rails 3.0?!
+include Rails.application.routes.url_helpers
+default_url_options[:host] = "localhost"
+helper = app.send(:helper)
+
+helper.controller = OpenStruct.new(params: {})
+
+helper.url_for( :controller => '/home/marketing', :action => 'pricing' )
