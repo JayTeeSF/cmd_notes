@@ -1,3 +1,8 @@
+# what's up with the remote(s):
+↪ git ls-remote
+# From git@github.com:zoodles/ey-cloud-recipes.git
+# ...
+
 # what's new on this branch vs. the remote repo:
 git log origin/master..
 
