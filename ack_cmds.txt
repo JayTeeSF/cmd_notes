@@ -1,5 +1,8 @@
 # use .ackrc
 
+# lookup string in files, but ignore a noisy file & a noisy directory
+ack --ignore-file tags --ignore-dir .ignore 'HtcFreePremiumUser'
+
 # the following just lists file names (I believe ...check perl regx vars)
 ack article_list --output="$&"
 
