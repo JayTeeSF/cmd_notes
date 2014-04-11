@@ -1,6 +1,9 @@
 git remote add a_game_remote git@github.com:zoodles/a_game.git
-git fetch a_game_remote
 git checkout -b a_game_branch a_game_remote/master
+# subsequently:
+git checkout a_game_branch
+
+git fetch a_game_remote
 
 git checkout master
 mkdir public/assessments/math-creative/math-music-game/
