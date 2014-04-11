@@ -1,0 +1,6 @@
+brew install go
+# add go to path
+# You may wish to add the GOROOT-based install location to your PATH:
+#   export PATH=$PATH:/usr/local/Cellar/go/1.2.1/libexec/bin
+mkdir -p ~/.godir/src
+export GOPATH=~/.godir/src
