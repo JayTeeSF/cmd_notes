@@ -9,3 +9,6 @@ git checkout master
 mkdir public/assessments/math-creative/math-music-game/
 git read-tree --prefix=public/assessments/math-creative/math-music-game/ -u a_game_branch
 git diff-tree -p a_game_branch  | git apply --directory=public/assessments/math-creative/math-music-game/
+
+# similarly:
+git diff-tree -p html5games_branch | git apply --allow-binary-replacement --directory=public/games/
