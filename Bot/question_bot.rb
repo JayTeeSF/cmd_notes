@@ -4,7 +4,7 @@ require 'fileutils'
 require 'rubygems'
 require 'xmpp4r-simple'
 
-require ENV["HOME"] + "/bin/secure_settings.rb"
+require ENV["HOME"] + "/lib/secure_settings.rb"
 
 module DebugPrinter
   attr_accessor :verbose
@@ -97,7 +97,7 @@ class DbRepo
     :comments => "CREATE TABLE comments(id INTEGER PRIMARY KEY, question_id integer, author_id integer, text varchar(255))"
   }
 
-  attr_reader :connection, :db_file, :config_file
+  attr_reader :connection, :config_file #, :db_file
 
   def find_all_questions_by(filters)
     get_comments = filters.delete(:answers_too) || false
@@ -188,6 +188,7 @@ class DbRepo
   end
 
   def initialize(options={})
+    @base_path = options[:base_path]
     @verbose = !! options[:verbose]
     @config_file = ENV["HOME"] + "/config/database.yml"
     setup
@@ -245,8 +246,11 @@ class DbRepo
     YAML::load_file(config_file)
   end
 
+  def db_file
+    @base_path || config["question_bot"]["database"]
+  end
+
   def connect_to_db
-    @db_file = config["question_bot"]["database"]
     @connection = SQLite3::Database.new db_file
   end
 end
@@ -287,7 +291,7 @@ module BotCommander
 
   attr_reader :repo
   def init(base_path=nil)
-    @repo = DbRepo.new(:verbose => verbose)
+    @repo = DbRepo.new(:verbose => verbose, :base_path => base_path )
   end
 
   def clear_questions
@@ -432,7 +436,7 @@ end
 
 class Bot
   include BotCommander
-  include SecureSettings
+  extend SecureSettings
   QUIT_CMDS = ['quit', 'exit', 'Exit', 'Quit']
   BUDDY_PROMPT = "buddy: "
   MESSAGE_PROMPT = "message: "
@@ -448,9 +452,9 @@ class Bot
   end
 
   def initialize(options={})
-    @user = options[:user] || USER
-    @pwd = options[:pwd] || PWD
-    @authorized = options[:authorized] || AUTHORIZED
+    @user = options[:user] || self.class.aim_bot_screenname
+    @pwd = options[:pwd] || self.class.aim_bot_pwd
+    @authorized = options[:authorized] || self.class.authorized_aim_contacts
     @verbose = options[:verbose]
     @one_time = options[:one_time]
     init(options[:base_path])
@@ -596,11 +600,11 @@ module CmdLineInterface
     o one for this BOT
     o (at least) one from which to control this BOT
 
-    (c) Create your own #{ENV['HOME']}/bin/secure_settings.rb file, e.g.:
+    (c) Create your own #{ENV['HOME']}/lib/secure_settings.rb file, e.g.:
     module SecureSettings
-      AUTHORIZED = ["your_AIM_screen_name"].freeze
-      USER='AIM_screen_name_for_your_bot'.freeze
-      PWD='AIM_pwd_for_your_bot'.freeze
+      authorized_aim_contacts = ["your_AIM_screen_name"].freeze
+      aim_bot_screenname='AIM_screen_name_for_your_bot'.freeze
+      aim_bot_pwd='AIM_pwd_for_your_bot'.freeze
     end
 
     and

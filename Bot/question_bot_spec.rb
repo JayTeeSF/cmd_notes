@@ -5,7 +5,7 @@ describe "QuestionBot" do
     @debug = false
     @base_path = '/tmp/question_bot_repo_test_dir'
 
-    @buddy = Bot::AUTHORIZED.first
+    @buddy = Bot.authorized_aim_contacts.first
     set_msg ""
 
     @options = {:one_time => true, :base_path => @base_path }
@@ -39,11 +39,15 @@ describe "QuestionBot" do
 
       context "with no questions" do
         it "should register a question" do
-          register_first_question
+          # register_first_question
+          register_question question1
         end
       end
 
       context "with a question" do
+        before(:each) do
+          register_question question1
+        end
         it "should register a question" do
           register_question question2
         end
@@ -67,7 +71,8 @@ describe "QuestionBot" do
 
         context "with multiple questions" do
           before :each do
-            register_first_question
+            #register_first_question
+            register_question question1
             register_question question2
             register_question question3
           end
@@ -109,7 +114,8 @@ describe "QuestionBot" do
 
         context "with a question" do
           before :each do
-            register_first_question
+            #register_first_question
+            register_question question1
           end
           it "should show the question" do
             show_a_question(1)
@@ -170,7 +176,8 @@ describe "QuestionBot" do
 
       context "with a closed question" do
         before :each do
-          register_first_question
+          # register_first_question
+          register_question question1
           close_question(1)
         end
 
@@ -181,7 +188,8 @@ describe "QuestionBot" do
 
       context "with an open question" do
         before :each do
-          register_first_question
+          #register_first_question
+          register_question question1
         end
 
         it "should close an open question" do
@@ -200,7 +208,8 @@ describe "QuestionBot" do
 
       context "with an open question" do
         before :each do
-          register_first_question
+          #register_first_question
+          register_question question1
         end
 
         it "should answer a question" do
@@ -215,7 +224,12 @@ describe "QuestionBot" do
 
   # HELPERS
   def flush_db
-    %x{rm -rf #{@base_path}} if File.exists?(@base_path)
+    if File.exists?(@base_path)
+      puts "removing db at #{@base_path.inspect}"
+      %x{rm -rf #{@base_path}}
+    else
+      puts "no db at #{@base_path.inspect}"
+    end
   end
 
   def debug
@@ -298,10 +312,10 @@ describe "QuestionBot" do
     got.should == [BotCommander::REGISTERED_OK]
   end
 
-  def register_first_question
-    set_msg question1
-    got.should == [BotCommander::REGISTERED_OK]
-  end
+  #def register_first_question
+  #  #set_msg question1
+  #  #got.should == [BotCommander::REGISTERED_OK]
+  #end
 
   def answer_question_when_no_open_questions
     set_msg "1 #{answer1}"
