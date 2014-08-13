@@ -1,0 +1,55 @@
+# Tutorial Slides:
+http://coenraets.org/slides/qconnyc2014/#5  
+
+# Setup Cmds:
+sudo npm install -g cordova
+cordova -v
+npm update -g cordova
+
+# Create & Build:
+
+cd dev
+cordova create <MyApp>
+  e.g.
+    cordova create json_image
+
+    cd json_image
+
+cordova platform add <platform>
+  e.g.
+    cordova platform add ios
+    cordova platform add android
+
+cordova build <platform>
+  e.g.
+    cordova build ios
+    cordova build android
+
+plugins:
+cordova plugin add <package-name>
+  e.g.
+    cordova plugin add org.apache.cordova.console
+    cordova plugin add org.apache.cordova.camera
+    cordova plugin add org.apache.cordova.dialogs
+    cordova plugin add org.apache.cordova.device
+    cordova plugin add org.apache.cordova.file
+    cordova plugin add org.apache.cordova.geolocation
+
+# Building In The Cloud:
+phonegap remote build <platform>
+  e.g.
+    phonegap remote build ios
+    phonegap remote build android
+
+
+# Wrap cordova dialogs and/or js-dialogs inside an abstraction layer, so mobile experience looks native, and web-experience still functions
+
+# use Topcoat Resources for look and feel of page:
+  http://topcoat.io
+  https://github.com/topcoat/topcoat
+
+https://github.com/ccoenraets/phonegap/workshop-jquk2014
+
+# test out codez:
+  cordova build ios
+  cordova emulate ios

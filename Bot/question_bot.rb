@@ -39,9 +39,11 @@ class GitRepo
 
   attr_reader :base_path, :name, :working_dir, :index
 
-  def initialize( _name, _base_path=nil )
-    @base_path = _base_path || DEFAULT_BASE_PATH
-    @name = _name
+  def initialize(options={})
+  # def initialize( _name, _base_path=nil )
+    #@base_path = _base_path || DEFAULT_BASE_PATH
+    @base_path = File.dirname(options[:base_path]) || DEFAULT_BASE_PATH
+    @name = File.basename(options[:base_path]) # _name
     @working_dir = "#{base_path}/#{name}"
     @index = "#{base_path}/#{name}/.git"
   end
@@ -292,6 +294,7 @@ module BotCommander
   attr_reader :repo
   def init(base_path=nil)
     @repo = DbRepo.new(:verbose => verbose, :base_path => base_path )
+    # @repo = GitRepo.new(:verbose => verbose, :base_path => base_path )
   end
 
   def clear_questions

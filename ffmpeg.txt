@@ -1,0 +1,31 @@
+convert wmv to imovie compatible videos with:
+ffmpeg -i input.wmv -c:v libx264 -crf 23 -c:a libfaac -q:a 100 output.mp4
+
+Thanks to:
+http://superuser.com/questions/73529/how-to-convert-wmv-to-mp4
+
+
+Gory Details (in case that page no longer exists):
+You can use FFmpeg (a free command-line tool for Mac, Linux and Windows) to encode WMV to MP4. Here is an example syntax:
+
+ffmpeg -i input.wmv -c:v libx264 -crf 23 -c:a libfaac -q:a 100 output.mp4
+This will encode the video to H.264 video and AAC audio, using the default quality. To change the quality for the video, use a different CRF value, where lower means better, e.g. 20 or 18. For audio, 100% is the default quality. Increase the value for better quality.
+
+For the AppleTV specifically, this is what Apple says it supports:
+
+H.264 video up to 1080p, 30 frames per second, High or Main Profile level 4.0 or lower, Baseline profile level 3.0 or lower with AAC-LC audio up to 160 Kbps per channel, 48kHz, stereo audio in .m4v, .mp4, and .mov file formats
+
+So, you could use the following command to force the 30 Hz frame rate and High profile:
+
+ffmpeg -i input.wmv -c:v libx264 -crf 23 -profile:v high -r 30 -c:a libfaac -q:a 100 -ar 48000 output.mp4
+share|improve this answer
+edited Feb 8 '13 at 2:59
+
+sudonim
+32  
+answered Nov 21 '09 at 17:05
+Molly7244
+      
+I just tried using this solution on Fedora 19 and ran into the error: Unknown encoder 'libaac' It seems that after a certain release, ffmpeg does not include binary distibutions with libfaac support, so you would need to build from source. Instead I changed 'libfaac' to 'aac' and added the '-strict -2' flags and the conversion worked successfully. –  roartechs Jan 6 at 8:10 
+      
+Unrecognized option 'c:v' Failed to set value 'libx264' for option 'c:v' –  WHK Feb 11 at 18:36
