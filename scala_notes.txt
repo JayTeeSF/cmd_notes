@@ -1,0 +1,37 @@
+# Install:
+brew install scala
+To use with IntelliJ, set the Scala home to:
+  /usr/local/opt/scala/idea
+
+Bash completion has been installed to:
+  /usr/local/etc/bash_completion.d
+
+# lessons:
+http://twitter.github.io/scala_school/basics.html
+
+# repl
+unix-prompt> scala
+
+scala> class Person(val name: String, val age: Int) {
+     | }
+defined class Person
+
+scala> val p = new Person("joe", 10)
+p: Person = Person@2a34281f
+
+scala> p.name
+res4: String = joe
+
+scala> p.age
+res5: Int = 10
+
+scala> val anony_fn = (x) => x * 2
+<console>:7: error: missing parameter type
+       val anony_fn = (x) => x * 2
+                       ^
+
+scala> val anony_fn = (x: Int) => x * 2
+anony_fn: Int => Int = <function1>
+
+scala> anony_fn(3)
+res6: Int = 6

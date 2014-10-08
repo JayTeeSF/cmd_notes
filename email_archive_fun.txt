@@ -1,0 +1,16 @@
+Having downloaded all my gmail (using their archive feature)
+I can now grep for patterns, i.e.:
+
+tail -1000 All\ mail\ Including\ Spam\ and\ Trash-2.mbox | egrep '^\w+:'
+
+tail -1000 All\ mail\ Including\ Spam\ and\ Trash-2.mbox | egrep
+'^(To|Date|From|Sent|Subject): '
+
+egrep '^(s|S)ubject: Journal Entry' ~/Downloads/All\ mail\ Including\
+Spam\ and\ Trash-2.mbox
+
+egrep '^(s|S)ubject: Journal Entry' -C5 -n ~/Downloads/All\ mail\ Including\ Spam\ and\ Trash-2.mbox | egrep '^\d+[-:](Date: |Subject: )'
+
+tail -50000 ~/Downloads/All\ mail\ Including\ Spam\ and\ Trash-2.mbox |
+egrep '^(s|S)ubject: Journal Entry' -C5 -n | egrep '^\d+[-:](Date:
+|Subject: )'

@@ -1,0 +1,1 @@
+gem uninstall `gem list | awk '{ print $1 }' | grep -v "rvm" | grep -v "test" | grep -v "psych" | grep -v "rdoc" | grep -v "io-console" |grep -v "rake" | grep -v "bigdecimal"| grep -v "json" | xargs`

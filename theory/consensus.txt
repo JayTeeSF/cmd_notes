@@ -1,0 +1,6 @@
+lesson 1:
+  if it has more than one head, it's a monster
+  -- earned and learned
+
+consensus is the enemy of innovation:
+http://blogs.hbr.org/2014/10/the-most-innovative-companies-dont-worry-about-consensus/
