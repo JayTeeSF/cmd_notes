@@ -1,0 +1,89 @@
+had to manually install babl
+...download their git repo, since their ftp site was borked
+and then run autogen.sh to generate the configure script...
+
+checkout:
+     that the following libraries are installed: lcms,
+     libpng, libjpeg, libpoppler (and poppler-data, optional encoding
+     package, necessary to import PDF with CJK and cyrillic text),
+     libtiff, webkit, libmng, librsvg, libwmf, libz, libbzip2, libgs
+     (Ghostscript), libaa and libjasper.
+
+and
+then brew gave notes (which I have so-far ignored) for:
+↪ brew install dbus-glib
+==> Installing dependencies for dbus-glib: gettext, glib, d-bus
+==> Installing dbus-glib dependency: gettext
+==> Downloading
+https://downloads.sf.net/project/machomebrew/Bottles/gettext-0.19.2.mavericks.bottle.tar.gz
+########################################################################
+100.0%
+==> Pouring gettext-0.19.2.mavericks.bottle.tar.gz
+==> Caveats
+This formula is keg-only, which means it was not symlinked into
+/usr/local.
+
+Mac OS X provides similar software, and installing this software in
+parallel can cause all kinds of trouble.
+
+OS X provides the BSD gettext library and some software gets confused if
+both are in the library path.
+
+Generally there are no consequences of this for you. If you build your
+own software and it requires this formula, you'll need to add to your
+build variables:
+
+    LDFLAGS:  -L/usr/local/opt/gettext/lib
+    CPPFLAGS: -I/usr/local/opt/gettext/include
+
+==> Summary
+🍺  /usr/local/Cellar/gettext/0.19.2: 1920 files, 18M
+==> Installing dbus-glib dependency: glib
+==> Downloading
+https://downloads.sf.net/project/machomebrew/Bottles/glib-2.42.0.mavericks.bottle.tar.gz
+########################################################################
+100.0%
+==> Pouring glib-2.42.0.mavericks.bottle.tar.gz
+🍺  /usr/local/Cellar/glib/2.42.0: 410 files, 18M
+==> Installing dbus-glib dependency: d-bus
+==> Downloading
+https://downloads.sf.net/project/machomebrew/Bottles/d-bus-1.8.8.mavericks.bottle.tar.gz
+########################################################################
+100.0%
+==> Pouring d-bus-1.8.8.mavericks.bottle.tar.gz
+==> Caveats
+If this is your first install, automatically load on login with:
+    mkdir -p ~/Library/LaunchAgents
+    cp /usr/local/Cellar/d-bus/1.8.8/org.freedesktop.dbus-session.plist
+~/Library/LaunchAgents/
+    launchctl load -w
+~/Library/LaunchAgents/org.freedesktop.dbus-session.plist
+
+If this is an upgrade and you already have the
+org.freedesktop.dbus-session.plist loaded:
+    launchctl unload -w
+~/Library/LaunchAgents/org.freedesktop.dbus-session.plist
+    cp /usr/local/Cellar/d-bus/1.8.8/org.freedesktop.dbus-session.plist
+~/Library/LaunchAgents/
+    launchctl load -w
+~/Library/LaunchAgents/org.freedesktop.dbus-session.plist
+
+To have launchd start d-bus at login:
+    ln -sfv /usr/local/opt/d-bus/*.plist ~/Library/LaunchAgents
+Then to load d-bus now:
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.d-bus.plist
+==> /usr/local/Cellar/d-bus/1.8.8/bin/dbus-uuidgen
+--ensure=/usr/local/var/lib/dbus/machine-id
+==> Summary
+🍺  /usr/local/Cellar/d-bus/1.8.8: 39 files, 1.9M
+==> Installing dbus-glib
+==> Downloading
+https://downloads.sf.net/project/machomebrew/Bottles/dbus-glib-0.102.mavericks.bottle.tar.gz
+########################################################################
+100.0%
+==> Pouring dbus-glib-0.102.mavericks.bottle.tar.gz
+==> Caveats
+Bash completion has been installed to:
+  /usr/local/etc/bash_completion.d
+==> Summary
+🍺  /usr/local/Cellar/dbus-glib/0.102: 38 files, 1.5M

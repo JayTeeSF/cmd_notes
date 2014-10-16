@@ -1,0 +1,10 @@
+# run all test(s)
+rake test
+
+# run a particular file
+rake test TEST=/Users/jthomas/dev/tech_test/test/controllers/packs_controller_test.rb
+# or
+ruby -I"lib:test" /Users/jthomas/dev/tech_test/test/controllers/packs_controller_test.rb
+
+# run a particular test
+ruby -I"lib:test" /Users/jthomas/dev/tech_test/test/controllers/packs_controller_test.rb -n test_should_not_create_a_pack_with_a_non-unique_name
