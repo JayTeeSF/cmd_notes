@@ -1,0 +1,52 @@
+details on how-to connect with Ruby, here: http://datastax.github.io/ruby-driver/
+
+require 'cassandra'
+start by: connecting to cassandra (defaults to current host) => cluster = Cassandra.connect
+create a 'keyspace' (arbitrary string name ...this step is apparently optional) => keyspace = "foo"
+then connect the cluster to the keyspace => session = cluster.connect(keyspace)
+at which point you can execute queries against the session session.execute_...("SELECT ...")
+
+
+
+
+
+
+####
+setup instructions: https://wiki.apache.org/cassandra/GettingStarted
+
+# driver (hopefully instead of python cqlsh): http://datastax.github.io/ruby-driver/
+
+# ensure key directories are setup (and I know where they are):
+#     
+#    data_file_directories: /usr/local/var/lib/cassandra/data #probably defaults to: /usr/local/var/lib/cassandra/data
+#     commitlog_directory: /usr/local/var/lib/cassandra/commitlog # probably defaults to: /usr/local/var/lib/cassandra/commitlog
+#
+# If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
+# saved_caches_directory: /usr/local/var/lib/cassandra/saved_caches # probably defaults to: /usr/local/var/lib/cassandra/saved_caches
+
+# per the system.log (in /usr/local/var/log/cassandra/):
+# To create keyspaces and column families, see 'help create' in cqlsh.
+
+
+# installed java 8...
+cuz cassandra -f told me to
+(sadly, I ran the launchctl cmds before trying cassandra -f by hand)
+
+### install:
+↪ brew install cassandra
+==> Downloading http://www.apache.org/dyn/closer.cgi?path=/cassandra/2.1.0/apache-cassandra-2.1.0-bin.tar
+==> Best Mirror http://apache.claz.org/cassandra/2.1.0/apache-cassandra-2.1.0-bin.tar.gz
+######################################################################## 100.0%
+==> Caveats
+If you plan to use the CQL shell (cqlsh), you will need the Python CQL library
+installed. Since Homebrew prefers using pip for Python packages, you can
+install that using:
+
+  pip install cql
+
+To have launchd start cassandra at login:
+    ln -sfv /usr/local/opt/cassandra/*.plist ~/Library/LaunchAgents
+Then to load cassandra now:
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.cassandra.plist
+==> Summary
+🍺  /usr/local/Cellar/cassandra/2.1.0: 3887 files, 91M, built in 9 seconds

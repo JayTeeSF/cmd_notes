@@ -1,0 +1,6 @@
+go get -u github.com/gorilla/mux
+go get -u github.com/codegangsta/negroni
+go get -u github.com/codegangsta/controller
+go get -u github.com/russross/blackfriday
+go get -u gopkg.in/unrolled/render.v1
+go get -u github.com/mattn/go-sqlite3
