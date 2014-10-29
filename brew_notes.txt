@@ -1,0 +1,6 @@
+the command to find all the (brew) installed packages on your system is just:
+brew list
+
+for more see:
+brew help
+man brew
