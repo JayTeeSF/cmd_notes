@@ -1,0 +1,6 @@
+cmd - option - power to put it to sleep
+#(if you accidentally to cntrl instead of cmd it will shutdown / reboot)
+#alternatively:
+pmset sleepnow
+#or
+osascript -e 'tell application "Finder" to sleep'

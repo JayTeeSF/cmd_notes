@@ -1,0 +1,25 @@
+hg pull # doesn't update working-dir
+hg merge
+hg branch my-branch
+hg add
+hg commit -m "..."
+hg push -f #if I'm creating my branch on mercurial
+hg update -C default # go back to default -- like git checkout
+
+# then, merge my branch to default... # tb-figured-out
+
+# then push default...
+
+hg help
+#
+  395  hg heads
+  396  hg rev
+  397  hg pull
+  400  hg config --edit
+  402  hg merge default
+  403  hg heads
+  404  hg merge 9467 #<-- find the # for default (use the local 4-digit number or the sha) using hte sourcetree gui, or the hg heads command
+  405  hg commit -m "merge"
+  406  hg push
+
+  482  hg log --limit 3
