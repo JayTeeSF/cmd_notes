@@ -8,6 +8,9 @@ hg update -C default # go back to default -- like git checkout
 
 # then, merge my branch to default... # tb-figured-out
 
+# abort a merge:
+hg update -C .
+
 # then push default...
 
 hg help
