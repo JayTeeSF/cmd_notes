@@ -12,6 +12,14 @@ git log ..origin/master
 # use opendiff to compare the changes in my working directory to what's in the repo...
 git difftool Gemfile
 
+# in the moment that a merge fails, and your merge tool isn't setup, try:
+git mergetool -t opendiff
+
+# to set it up, you may need to locate xcode utilities:
+sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+then, to set "opendiff" as the default mergetool globally:
+git config --global merge.tool opendiff
+
 Delete a remote branch: git push <remote> :branch_name
  e.g.
  git push jt :lpf_ploid_support
