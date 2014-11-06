@@ -1,0 +1,57 @@
+This plus rails engines to keep each app (engine) small and easy to work with
+
+Some engines models only
+Others  web layer
+
+ Ensure DAG of dependencies one-way
+
+Tun only a subset of tests when a change occurs
+And *use datamapper* model (wrap active record)
+
+UserManager wraps User < AR under its "private" section
+
+Then Return poro's (or activeModel classes)
+
+Even lookup the author of a post
+
+Or ask a post (where <engine>_posts table contains user_id column) for all posts associated with a particular user_id
+
+No need for AR relations!!!
+
+
+
+
+
+
+
+Begin forwarded message:
+
+From: Jonathan <jonathan@softwareqed.com>
+Date: October 3, 2014 at 5:19:23 AM PDT
+To: Jonathan Thomas <jonathan@his-service.net>
+Subject: Fwd: I think I need to write some code :-)
+
+
+
+Refactoring rails
+
+
+
+Begin forwarded message:
+
+From: jonathan thomas <jonathan@softwareqed.com>
+Date: September 12, 2014 at 12:47:11 PM PDT
+To: Ron Cadet <ron@softwareqed.com>
+Subject: I think I need to write some code :-)
+
+Here's a cool snippet from a book that talks about refactoring large Ruby projects.
+
+I'm now wondering if my previous thought about introducing services (i.e. requiring a layer of abstraction between *each* controller-action and the models); if there design is optimal; or if there's an ideal synthesis.
+
+Some "pro(s)" to adding the service layer (which this approach doesn't necessarily prohibit) is that it reduces the dependency on Rails (which is nice for testing and the possibility of code-reuse). And, like the other option it also avoids polluting the models or (for the most-part) the controllers with (hard-to-test) code-clutter.
+
+On the other hand, the "pro(s)" to this approach is that one can start building an app simply ...with a consistent controller-design and possibly never have to introduce the added complexity of services ...since this design should enable an app to remain readable and flexible as it grows. 
+
+Checkout this chapter snippet:
+http://media.pragprog.com/titles/d-kegrap/beautiful_controllers.pdf
+
