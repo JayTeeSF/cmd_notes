@@ -1,3 +1,22 @@
+# after merging the current branch with default, do a diff:
+hg diff -r default
+
+# and like git strip whitespace changes:
+hg diff -w -r default
+
+# more over, you can pipe the output to gitx
+hg diff -w -r default | gitx
+
+###
+
+# it seems that I'm the only one creating "randomly named" mercurial branches.
+# Am I doing it wrong?  (From what I read it looks like mercurial branches can't be deleted.)
+
+# you can close branches in mercurial:
+hg commit --close-branch -m "replaced with newer version rebased off default"
+# will mark the branch as closed
+
+###
 hg pull # doesn't update working-dir
 hg merge
 hg branch my-branch
