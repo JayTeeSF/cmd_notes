@@ -14,6 +14,8 @@ hg diff -w -r default | gitx
 
 # you can close branches in mercurial:
 hg commit --close-branch -m "replaced with newer version rebased off default"
+#or
+hg commit --close-branch -m "merged to default"
 # will mark the branch as closed
 
 ###
