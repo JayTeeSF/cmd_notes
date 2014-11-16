@@ -16,3 +16,10 @@ diff -u <(cat /dev/null) <new_file>
 e.g.
 diff -u <(cat /dev/null) new_file.txt
 
+usecase for diff of diffs
+one branch with a range of commits
+another branch with squashed commits
+
+and you want to know if they're the same (i.e. no difference) ...or not
+
+diff -u <(git diff master~5..master~1) <(git diff master~4..master) | view -
