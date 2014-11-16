@@ -1,0 +1,18 @@
+git diff -w
+like
+hg diff -w
+
+are my favorite diff formats
+...they don't waste my time with simple space-changes
+and they can be piped to gitx for easy reading
+
+That said, for new files and just shell work --assuming I ever worked
+without being in a repo (!?)-- you can use:
+diff -u
+
+moreover, to look at a newly created file
+diff -u <(cat /dev/null) <new_file>
+
+e.g.
+diff -u <(cat /dev/null) new_file.txt
+
