@@ -1,3 +1,11 @@
+# thx to Joel Spolsky:
+# my "main" local copy of the repo is in my brain-scape.com directory, so I clone it:
+hg clone brain-scape.com brain-scape.com-diff
+
+# now I can work on a different "branch" within the "brain-scape.com-diff" directory
+# sometimes this (which relies on hardlinks for space efficiency) is better than making "permanent" branches in the mercurial repo
+# Instead, I can just have mutliple "working-directories"
+
 # after merging the current branch with default, do a diff:
 hg diff -r default
 
