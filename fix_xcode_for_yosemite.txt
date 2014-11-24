@@ -1,0 +1,1 @@
+rm -rf "$(getconf DARWIN_USER_CACHE_DIR)/com.apple.appstore"
