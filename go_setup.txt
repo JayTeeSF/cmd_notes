@@ -1,6 +1,81 @@
+# godoc is no longer part of core, so:
+  go get code.google.com/p/go.tools/cmd/godoc
+
 brew install go
 # add go to path
 # You may wish to add the GOROOT-based install location to your PATH:
 #   export PATH=$PATH:/usr/local/Cellar/go/1.2.1/libexec/bin
 mkdir -p ~/.godir/src
 export GOPATH=~/.godir/src
+
+# or elsewhere (see bash_login for aliases to re-set GOPATH and cd appropriately)
+
+# trouble shooting (thx to: https://groups.google.com/forum/#!topic/golang-dev/ZWFCitgOD3E):
+↪ go build
+# brainscape.com/bsu
+# ./aws.go:4: import /Users/jthomas/dev/bsu/pkg/darwin_amd64/launchpad.net/goamz/aws.a: object is [darwin amd64 go1.2.1 X:none] expected [darwin amd64 go1.3.3 X:precisestack]
+
+# solution:
+↪ go build -a
+#then:
+↪ go install -a
+
+# The easiest way to update all packages in GOPATH is:
+go install -a -v all
+
+# so then I tried to clean ...and created a new mess:
+go clean -a -x -v all
+
+# that caused me to lose some dependencies, which led me to (line-by-line) run a script in our repo:
+↪ more upd_libs.sh
+
+#!/bin/sh
+#go get -u launchpad.net/goamz/aws
+#<-- failure because Bazaar (bzr) RCS (revision control software) isn't installed!
+#  per: http://golang.org/s/gogetcmd
+#  brew install bzr
+#
+#  then:
+#  ↪ go get -u launchpad.net/goamz/aws
+#  # cd /Users/jthomas/dev/bsu/src/launchpad.net/goamz; bzr pull --overwrite
+#  bzr: ERROR: No such file: u'/Users/jthomas/dev/bsu/src/launchpad.net/goamz/.bzr/repository/upload/isvri92uw2kusqrpe8u8.pack': [Errno 2] No such file or directory: u'/Users/jthomas/dev/bsu/src/launchpad.net/goamz/.bzr/repository/upload/isvri92uw2kusqrpe8u8.pack'
+#  Using saved parent location: http://bazaar.launchpad.net/~goamz/goamz/trunk/
+#  package launchpad.net/goamz/aws: exit status 3
+#
+#  so I made the missing dir:
+#  ↪ mkdir -p /Users/jthomas/dev/bsu/src/launchpad.net/goamz/.bzr/repository/upload
+#  ...and it worked:
+#  ↪ go get -u launchpad.net/goamz/aws
+#
+#go get -u launchpad.net/goamz/ec2
+#go get -u launchpad.net/goamz/iam
+#go get -u launchpad.net/goamz/s3
+
+# updated, to resolve issues with missing packages:
+go install -a -v all
+# cannot find package "github.com/davecgh/go-spew/spew"
+# cannot find package "golang.org/x/net/html"
+#
+#
+#cannot find package "golang.org/x/net/html" in any of:
+#cannot find package "golang.org/x/net/html/atom" in any of:
+#cannot find package "golang.org/x/net/websocket" in any of:
+#cannot find package "code.google.com/p/goauth2/oauth" in any of:
+#cannot find package "code.google.com/p/google-api-go-client/compute/v1" in any of:
+#cannot find package "code.google.com/p/go.net/dict" in any of:
+#cannot find package "code.google.com/p/freetype-go/freetype" in any of:
+#cannot find package "code.google.com/p/freetype-go/freetype/raster" in any of:
+#cannot find package "code.google.com/p/freetype-go/freetype/truetype" in any of:
+#cannot find package "code.google.com/p/x-go-binding/ui" in any of:
+#cannot find package "code.google.com/p/x-go-binding/ui/x11" in any of:
+#cannot find package "code.google.com/p/rog-go/x11" in any of:
+#cannot find package "exp/draw" in any of:
+#cannot find package "exp/draw/x11" in any of:
+#cannot find package "github.com/patrick-higgins/summstat" in any of:
+#cannot find package "netchan" in any of:
+#cannot find package "github.com/kisielk/gotool" in any of:
+#cannot find package "container/vector" in any of:
+#cannot find package "other" in any of:
+#cannot find package "code.google.com/p/go.net/websocket" in any of:
+#cannot find package "github.com/davecgh/go-spew/spew" in any of:
+#cannot find package "gopkg.in/check.v1" in any of:

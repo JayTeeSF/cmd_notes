@@ -8,3 +8,21 @@ ruby -I"lib:test" /Users/jthomas/dev/tech_test/test/controllers/packs_controller
 
 # run a particular test
 ruby -I"lib:test" /Users/jthomas/dev/tech_test/test/controllers/packs_controller_test.rb -n test_should_not_create_a_pack_with_a_non-unique_name
+
+# for a Rails ActionController:TestCase
+test "get ab_experiments" do
+ ...
+end
+# the following worked for one of my projects:
+bundle exec ruby -I"lib:test" test/functional/mobile_controller_test.rb -n "test_get_ab_experiments"
+
+# using rake (with/without bundle exec) may work
+# though:
+bundle exec rake test test/functional/mobile_controller_test.rb -n test_get_ab_experiments
+# failed for me because rake was processing the "-n" option (vs. test-unit processing it).
+
+# instead I tried the following -- but that seemed to run the full test-suite... (probably need to use the TEST= variable approach...
+bundle exec rake test test/functional/mobile_controller_test.rb -- -n test_get_ab_experiments
+
+# finally, this seems to work:
+bundle exec rake test test/functional/mobile_controller_test.rb
