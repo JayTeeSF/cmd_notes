@@ -1,3 +1,19 @@
+
+# setup a stub, but you want it to return the original value!
+I found it: expect(Person).to receive(:find).and_call_original
+
+
+# debugging code from a particular test that only fails when the whole test suite is run:
+# before the test:
+      ENV['library_GET_test'] = 'true'
+# after the test:
+      ENV.delete('library_GET_test')
+# in the code:
+debugger if !!ENV['library_GET_test']
+
+for i in {1..50}; do RAILS_ENV=test bundle exec rspec spec/controllers/mobile/users/apple_push_notif_device_tokens_controller_spec.rb; done
+
+#
 # zoodles-block for env-specific testing:
 run_with_rails_env( 'production' ) do
 end

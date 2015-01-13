@@ -1,0 +1,4 @@
+brew install gpg
+brew install s3cmd
+s3cmd --configure
+s3cmd sync --dry-run --delete-removed  ~/Desktop/aws/ELB\ Access\ Logging/brainscape-logs/ s3://brainscape-logs/load-balancer-logs/AWSLogs/406677637060/elasticloadbalancing/us-east-1/
