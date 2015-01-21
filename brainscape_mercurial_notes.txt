@@ -1,0 +1,20 @@
+Work on your own Topic Branch. When you're done, merge that branch after
+all tests pass:
+# Note: at this point you might want to (first) merge the default branch
+into your topic branch
+# similar to:
+http://lostechies.com/jimmybogard/2011/02/01/three-simple-mercurial-rules/
+hg pull
+hg update -C topic_branch
+
+hg merge default
+hg commit -Am "merging default"
+hg push -b . # append --new-branch, only if it's a new branch
+
+# After which you can:
+hg update -C default
+hg merge topic_branch
+hg update topic_branch
+hg commit -Am "merging jt_controller_specs_2" --close-branch #remove the
+topic-branch
+hg push -b .
