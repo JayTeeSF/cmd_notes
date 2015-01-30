@@ -1,3 +1,11 @@
+## Tables still have DATA !?
+# confirm which tables have data:
+unix> RAILS_ENV=test rails c
+railsc> (ActiveRecord::Base.connection.tables - ['schema_migrations']).reduce({}) {|hash,tbl| hash[tbl] = ActiveRecord::Base.connection.execute("select count(*) from #{tbl}").first.first; hash  }.select{|tbl,cnt| cnt > 0 }
+
+# clean those tables...
+(ActiveRecord::Base.connection.tables - ['schema_migrations']).reduce({}) {|hash,tbl| hash[tbl] = ActiveRecord::Base.connection.execute("select count(*) from #{tbl}").first.first; hash  }.select{|tbl,cnt| cnt > 0 }.keys.each {|tbl| ActiveRecord::Base.connection.execute("truncate #{tbl}")}
+#
 
 # setup a stub, but you want it to return the original value!
 I found it: expect(Person).to receive(:find).and_call_original
