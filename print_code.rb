@@ -58,3 +58,13 @@ class PrintCode
     methods.all?{ |method_name| obj.respond_to?( method_name ) }
   end
 end
+
+if __FILE__ == $PROGRAM_NAME
+  puts "USAGE: #{PrintCode.usage}\n"
+
+  puts "Begin Example:"
+  puts "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  PrintCode.example
+  puts "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  puts "End Example"
+end

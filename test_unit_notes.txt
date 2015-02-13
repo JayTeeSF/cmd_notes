@@ -26,3 +26,6 @@ bundle exec rake test test/functional/mobile_controller_test.rb -- -n test_get_a
 
 # finally, this seems to work:
 bundle exec rake test test/functional/mobile_controller_test.rb
+
+and so does this:
+↪ bundle exec ruby -I"lib:test" ~/dev/brain-scape.com-dev/test/functional/cards_controller_simple_editor_test.rb -n "test_quick_edit_empty_deck"
