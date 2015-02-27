@@ -107,8 +107,6 @@ echo $(docker-ip) dockerhost | sudo tee -a /etc/hosts # of course, if you have t
  #> create database <dbname>
 
  # better:
- # docker-enter bst-mysql mysql -u root -p <dbname>
- # best:
  docker-enter bst-mysql mysqladmin -uroot -p create <dbname>
 
 
