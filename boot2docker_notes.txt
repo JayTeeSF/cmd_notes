@@ -1,0 +1,284 @@
+1) brew install boot2docker
+  # per brew:
+  ln -sfv /usr/local/opt/boot2docker/*.plist ~/Library/LaunchAgents
+  launchctl load ~/Library/LaunchAgents/homebrew.mxcl.boot2docker.plist
+
+#To have launchd start boot2docker at login:
+#    ln -sfv /usr/local/opt/boot2docker/*.plist ~/Library/LaunchAgents
+#Then to load boot2docker now:
+#    launchctl load
+#~/Library/LaunchAgents/homebrew.mxcl.boot2docker.plist
+#==> Summary
+
+2) download, install, & run virtual box
+
+3) setup docker inside virtual box
+boot2docker init
+
+4) setup shell environment variables for docker:
+   # update your .bash... and/or run...
+   $(boot2docker shellinit 2>/dev/null)
+
+   ## OPEN a new terminal (to get all the shell goodness)
+
+5) boot2docker status # running
+
+6) start-up docker
+  boot2docker start
+
+  # this failed for me the first time, so I had to stop & try again (a few times)
+  boot2docker -v up # per the failure message
+
+  # then I tried:
+  boot2docker stop
+  boot2docker status
+  boot2docker start
+
+7) share /Users with docker
+ VBoxManage sharedfolder add boot2docker-vm --name /Users --hostpath /Users --automount
+
+8) see what's running (or not):
+docker ps
+
+# when I ran out of diskspace, before having to resize the drive:
+docker run mysql:5.5 df -kh
+
+I used https://docs.docker.com/articles/b2d_volume_resize/ to solve that issue
+vboxmanage clonehd VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vmdk VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vdi --format VDI --variant Standard
+vboxmanage modifyhd ~/VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vdi --resize 149520
+# download gparted: gparted-live-0.21.0-1-i586.iso http://gparted.sourceforge.net/download.php/
+# under storage settings:
+#  add an IDE controller
+#  add gparted iso
+#  remove .vmdk, replace it with .vdi
+#  boot machine (manually) in virtualbox
+#  accept all defaults
+#  use gui to resize & apply changes
+#  kill gparted; and shutdown
+#  remove gparted .iso
+#  boot2docker start
+#  confirm diskspace increase on /sda1
+#  w/ the previous df -kh
+
+8) create a new docker (container) detached, with port mapping, named bst-mysql, passing ENV var to it, then (via the docker hub/package site)
+  #  download mysql version 5.5
+   #initial version: docker run -P -d --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+   #bogus version that creates a tty and allows ctrl-c to exit, but not useful (see docker-enter, below):
+   #docker run -p 3306:3306 -t --sig-proxy=false --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+
+   # update: allow docker to mount a folder on boot2docker
+   # note: /path/to/sources is based on the boot2docker server! If you are using a mac, you should have already
+   # shared ~ or some other directory structure...
+   docker run -p 3306:3306 -d -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+
+
+# future: could theoretically create our own packages for hosting via: https://hub.docker.com/
+
+
+# read this: http://viget.com/extend/how-to-use-docker-on-os-x-the-missing-guide
+# aside from understanding our previous steps, setup a local ~/bin/docker-enter script
+
+# Per: http://dba.stackexchange.com/questions/83125/mysql-any-way-to-import-a-huge-32-gb-sql-dump-faster
+# innodb_buffer_pool_size = 4G
+# innodb_log_buffer_size = 256M
+# innodb_log_file_size = 1G
+# innodb_write_io_threads = 16
+# innodb_flush_log_at_trx_commit = 0
+docker-enter bst-mysql cp /mnt/my.cnf /etc/mysql/conf.d/ # this assumes you have ~/sources/my.conf shared
+docker stop bst-mysql
+docker start bst-mysql
+
+9)  confirm it's running
+docker ps
+#CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS               NAMES
+#d268cd0439b7        mysql:5.5           "/entrypoint.sh mysq   22 seconds ago      Up 21 seconds       3306/tcp            bst-mysql
+
+10) get the ip of the docker container-box:
+boot2docker ip #=> 192.168.59.106
+
+# given snippet in my bash (per the viget.com site), run:
+echo $(docker-ip) dockerhost | sudo tee -a /etc/hosts # of course, if you have to destroy & re-init boot2docker be sure to clean-up
+
+11) connect to mysql on that host and create the staging database
+ # see /path/to/config/datbase.yml for details:
+
+ # from your local mysql client:
+ # mysql -h $(docker-ip) -u root -p mysql
+ #> create database <dbname>
+
+ # better:
+ # docker-enter bst-mysql mysql -u root -p <dbname>
+ # best:
+ docker-enter bst-mysql mysqladmin -uroot -p create <dbname>
+
+
+12)  statup a local screen session; time the loading of the db
+  # from local client:
+  mysql -h $(docker-ip) -u root -p <dbname> < /path/to/db-dump/bs_db_2015_02_13_040238.dump
+  # better yet:
+  # if possible have the docker container start mysql, as follows:
+  # service mysql restart --innodb-doublewrite=0
+
+# better yet (assuming you put the dump file in the mounted directory):
+docker-enter bst-mysql
+apt-get update
+apt-get install -y procps
+#> echo "starting at: " `date`; time mysql -u root -p <dbname> < /mnt/bs_db_2015_02_13_040238.dump; echo "finished at: " `date`
+
+  # make a script that does the following, so you can run a single mysql < /path/to/that.sql
+  mysql> use database_name
+  mysql> set autocommit=0; set unique_checks=0; set foreign_key_checks=0;
+  mysql> source /path/to/dump.sql
+  mysql> commit; set unique_checks=1; set foreign_key_checks=1;
+
+
+# check on it, periodically, from another terminal with:
+mysql -h $(docker-ip) -u root -p -e 'show tables\G' <dbname>
+mysql -h $(docker-ip) -u root -p --silent -N -e 'show tables' <dbname> | wc -l
+mysql -h $(docker-ip) -u root -e 'show variables\G' -p mysql
+###
+
+
+APPENDIX: 
+
+if it all goes bad, blow away docker:
+docker stop bst-mysql
+boot2docker stop
+boot2docker destroy
+# then start again: boot2docker init (step 3)
+
+
+after restarting boot2docker, restart the docker container:
+docker start bst-mysql
+
+#NO: docker run mysql:5.5 mysqld --help
+mysql -h $(docker-ip) -u root -p mysql
+
+# error: Found option without preceding group in config file: /usr/local/etc/my.cnf at line: 1
+# created a file via tools.percona.com/wizard
+then I scp'd that to the boot2docker machine
+docker/tcuser
+
+The following FAILED: I ssh'd and copied it using some fancy commands:
+boot2docker ssh
+docker inspect -f '{{.Id}}' bst-mysql
+# => 1b37db1ea140df207f648f8f409baeb7a3247263626ec8a3c708d52df6ded0c7
+
+docker@boot2docker:~$ sudo cp sample_my.cnf  /var/lib/docker/aufs/mnt/**1b37db1ea140df207f648f8f409baeb7a3247263626ec8a3c708d52df6ded0c7**/root/
+docker@boot2docker:~$ sudo ls -al /var/lib/docker/aufs/mnt/**1b37db1ea140df207f648f8f409baeb7a3247263626ec8a3c708d52df6ded0c7**/root/
+
+# now copy that from docker !?
+
+#NOPE
+# ssh to boot2docker
+# use the ID of the container (via docker ps) and tab-complete the following:
+# cp sample_my.cnf /var/lib/docker/aufs/mnt/1b37db1ea<tab><tab>/usr/local/etc/my.cnf
+cp sample_my.cnf /var/lib/docker/aufs/mnt/1b37db1ea140df207f648f8f409baeb7a3247263626ec8a3c708d52df6ded0c7/usr/local/etc/my.cnf
+
+## FYI:
+find: /var/lib/docker/aufs/mnt/ef616d7d6f655f5c93f91da4392765c1e4c406d9e770c608048489f297046457/root: Permission denied
+docker@boot2docker:~$ more /var/lib/docker/aufs/mnt/ef616d7d6f655f5c93f91da4392765c1e4c406d9e770c608048489f297046457/etc/mysql/my.cnf
+[mysqld]
+!includedir /etc/mysql/conf.d/
+docker@boot2docker:~$ more /var/lib/docker/aufs/mnt/ef616d7d6f655f5c93f91da4392765c1e4c406d9e770c608048489f297046457/etc/mysql/conf.d/docker.cnf
+[mysqld]
+user = mysql
+
+## APPENDIX 1:
+↪ docker run mysql:5.5 ls /etc/mysql/my.cnf
+/etc/mysql/my.cnf
+↪ docker run mysql:5.5 cat /etc/mysql/my.cnf
+[mysqld]
+!includedir /etc/mysql/conf.d/
+↪ docker run mysql:5.5 ls /etc/mysql/conf.d/
+docker.cnf
+↪ docker run mysql:5.5 cat /etc/mysql/conf.d/docker.cnf
+[mysqld]
+user = mysql
+datadir = /var/lib/mysql
+
+11) recover after a failed attempt:
+docker stop bst-mysql
+
+12) see what's NOT running:
+docker ps -a
+
+13) list the images that are available on my system:
+docker images
+
+14) remove the bad container (leaving the downloaded files, though):
+docker rm bst-mysql
+
+15) (repeat step 8)
+
+FYI:
+#docker-enter bst-mysql mysqladmin -uroot -p shutdown # this kills the docker container (i.e. like docker stop bst-mysql)
+
+
+
+### APPENDIX 2:
+mysql:5.5: The image you are pulling has been verified. Important: image verification is a tech preview feature and should not be relied on to provide security.
+Status: Downloaded newer image for mysql:5.5
+Running mysql_install_db ...
+Installing MySQL system tables...
+OK
+Filling help tables...
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
+To do so, start the server, then issue the following commands:
+
+/usr/local/mysql/bin/mysqladmin -u root password <some new pwd>
+/usr/local/mysql/bin/mysqladmin -u root -h 18a1b9896ebd password <some new pwd>
+
+Alternatively you can run:
+/usr/local/mysql/bin/mysql_secure_installation
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the manual for more instructions.
+
+You can start the MySQL daemon with:
+cd /usr/local/mysql ; /usr/local/mysql/bin/mysqld_safe &
+
+You can test the MySQL daemon with mysql-test-run.pl
+cd /usr/local/mysql/mysql-test ; perl mysql-test-run.pl
+
+Please report any problems at http://bugs.mysql.com/
+
+Finished mysql_install_db
+150227  1:08:26 [Note] Plugin 'FEDERATED' is disabled.
+150227  1:08:26 InnoDB: The InnoDB memory heap is disabled
+150227  1:08:26 InnoDB: Mutexes and rw_locks use GCC atomic builtins
+150227  1:08:26 InnoDB: Compressed tables use zlib 1.2.3
+150227  1:08:26 InnoDB: Using Linux native AIO
+150227  1:08:26 InnoDB: Initializing buffer pool, size = 128.0M
+150227  1:08:26 InnoDB: Completed initialization of buffer pool
+InnoDB: The first specified data file ./ibdata1 did not exist:
+InnoDB: a new database to be created!
+150227  1:08:26  InnoDB: Setting file ./ibdata1 size to 10 MB
+InnoDB: Database physically writes the file full: wait...
+150227  1:08:26  InnoDB: Log file ./ib_logfile0 did not exist: new to be created
+InnoDB: Setting log file ./ib_logfile0 size to 5 MB
+InnoDB: Database physically writes the file full: wait...
+150227  1:08:26  InnoDB: Log file ./ib_logfile1 did not exist: new to be created
+InnoDB: Setting log file ./ib_logfile1 size to 5 MB
+InnoDB: Database physically writes the file full: wait...
+InnoDB: Doublewrite buffer not found: creating new
+InnoDB: Doublewrite buffer created
+InnoDB: 127 rollback segment(s) active.
+InnoDB: Creating foreign key constraint system tables
+InnoDB: Foreign key constraint system tables created
+150227  1:08:26  InnoDB: Waiting for the background threads to start
+150227  1:08:27 InnoDB: 5.5.42 started; log sequence number 0
+150227  1:08:27 [Note] Server hostname (bind-address): '0.0.0.0'; port: 3306
+150227  1:08:27 [Note]   - '0.0.0.0' resolves to '0.0.0.0';
+150227  1:08:27 [Note] Server socket created on IP: '0.0.0.0'.
+150227  1:08:27 [Note] Event Scheduler: Loaded 0 events
+150227  1:08:27 [Note] mysqld: ready for connections.
+Version: '5.5.42'  socket: '/tmp/mysql.sock'  port: 3306  MySQL Community Server (GPL)
