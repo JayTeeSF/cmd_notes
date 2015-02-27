@@ -4,7 +4,7 @@
 # #require 'mime/message' #comment-out this line from gmail/message.rb
 
 require 'gmail'
-gmail = Gmail.new('jonathan@zoodles.com', 'x3c4dsaw')
+gmail = Gmail.new('<addr>', '<pwd>')
 
 mbox = gmail.mailbox("[Gmail]/Sent Mail")
 

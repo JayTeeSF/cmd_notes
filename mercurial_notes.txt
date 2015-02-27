@@ -1,3 +1,23 @@
+list commits on the current branch:
+hg history --branch . | more
+
+# CHERRY PICK to production:
+  234  hg pull
+  235  hg update -C production
+  236  hg transplant 6b0bfe7d73375ea00155c24922c35d85a783b731 # move my staging commit (that's on bitbucket) to the (bitbucket) production branch
+
+
+# hg shelve <-- git stash equivalent:
+↪ hg shelve --name LEFTOFF
+shelved as LEFTOFF
+3 files updated, 0 files merged, 0 files removed, 0 files unresolved
+¿jthomas? ~/dev/brain-scape.com-dev[default*]
+↪ hg shelve --list
+LEFTOFF         (4s ago)    changes to 'fix sharing a... (https://projects.dol...
+# then:
+↪ hg unshelve
+
+
 # thx to Joel Spolsky:
 # my "main" local copy of the repo is in my brain-scape.com directory, so I clone it:
 hg clone brain-scape.com brain-scape.com-diff

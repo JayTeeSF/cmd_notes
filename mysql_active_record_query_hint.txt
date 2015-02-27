@@ -1,0 +1,17 @@
+Not unlike what Mason did, years ago...
+http://erniemiller.org/2011/08/30/slow-mysql-query-ill-give-you-a-hint/
+
+Comment.where(:article_id => Article.where(:published => true)).
+            order('comments.id desc').
+            limit(3)
+
+SELECT  `comments`.* 
+    FROM `comments`  
+    WHERE `comments`.`article_id` 
+      IN (
+        SELECT `articles`.`id` 
+        FROM `articles`  
+        WHERE `articles`.`published` = 1
+      ) 
+    ORDER BY comments.id desc 
+    LIMIT 3

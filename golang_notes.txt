@@ -1,0 +1,14 @@
+resources:
+
+These slides are written by Rob Pike and are slightly out of date, but
+they were the my main reference in the pre-1.0 days.
+http://go.googlecode.com/hg-history/release-branch.r60/doc/GoCourseDay1.pdf
+http://go.googlecode.com/hg-history/release-branch.r60/doc/GoCourseDay2.pdf
+http://go.googlecode.com/hg-history/release-branch.r60/doc/GoCourseDay3.pdf
+I still think they are the best guides out there, despite being a bit
+dated. They were invaluable when I jumped in and wrote a small first
+project in Go two years ago.
+Additional as a reference, run godoc locally for a super fast reference
+manual:
+godoc -http=:6060
+open http://localhost:6060
