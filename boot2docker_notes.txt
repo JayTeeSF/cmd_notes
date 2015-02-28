@@ -61,6 +61,7 @@ vboxmanage modifyhd ~/VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vdi --resize
 #  w/ the previous df -kh
 
 8) create a new docker (container) detached, with port mapping, named bst-mysql, passing ENV var to it, then (via the docker hub/package site)
+
   #  download mysql version 5.5
    #initial version: docker run -P -d --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
    #bogus version that creates a tty and allows ctrl-c to exit, but not useful (see docker-enter, below):
@@ -69,11 +70,37 @@ vboxmanage modifyhd ~/VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vdi --resize
    # update: allow docker to mount a folder on boot2docker
    # note: /path/to/sources is based on the boot2docker server! If you are using a mac, you should have already
    # shared ~ or some other directory structure...
-   docker run -p 3306:3306 -d -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+###   docker run -p 3306:3306 -d -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+# but first:
+#docker run -i -t --name mysql_data -v /var/lib/mysql busybox /bin/sh
+#docker run --name mydb-data --entrypoint /bin/echo mysql Data-only container for mydb
+docker run --name mysql_data mysql:5.5 echo "MySQL data container"
+Then:
+# first time, before importing db:
+# docker run -d --volumes-from mysql_data -p 3306:3306 -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+# after db import, and after rsyncing data from former bst-mysql to
+# laptop: docker-enter bst-mysql; apt-get upgrade; apt-get install rsync; apt-get install ssh; rsync -avz /var/lib/mysql/ jthomas@192.168.1.75:/Users/jthomas/mysql/
+# docker save...
+# docker commit <container id> <username/repo>
+# docker rm bst-mysql
 
+docker run -d --volumes-from mysql_data -p 3306:3306 --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+# finally,  copy the data back ...so it lands in the mysql_data container
+# laptop: docker-enter bst-mysql
+# apt-get upgrade; apt-get install rsync; apt-get install ssh; 
+# rsync -avzh jthomas@192.168.1.75:/Users/jthomas/mysql /var/lib/mysql/
+
+# in the meantime (parallel processing): NAH ...not enough diskspace to try this:
+# docker run -d --volumes-from mysql_data -P -v $HOME/sources:/mnt --name=bst-mysql2 -e MYSQL_ROOT_PASSWORD=brainscape123 mysql:5.5
+
+# to install docker on the target ubuntu system: see: http://www.liquidweb.com/kb/how-to-install-docker-on-ubuntu-14-04-lts/
+apt-get update
+apt-get -y install docker.io
+ln -sf /usr/bin/docker.io /usr/local/bin/docker
+sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+update-rc.d docker.io defaults
 
 # future: could theoretically create our own packages for hosting via: https://hub.docker.com/
-
 
 # read this: http://viget.com/extend/how-to-use-docker-on-os-x-the-missing-guide
 # aside from understanding our previous steps, setup a local ~/bin/docker-enter script
@@ -136,6 +163,18 @@ mysql -h $(docker-ip) -u root -p --silent -N -e 'show tables' <dbname> | wc -l
 mysql -h $(docker-ip) -u root -e 'show variables\G' -p mysql
 ###
 
+
+12) prepare (70GB) image
+remove my.cnf used to speed-up the import:
+docker-enter bst-mysql rm /etc/mysql/conf.d/my.cnf
+docker ps -l # get <container id>
+docker commit <container id> <username/repo>
+# docker commit bc3 brainscape/mysql
+# 2ce...
+docker save brainscape/mysql > /tmp/bst-mysql.tar
+# upload to another server ?!
+↪ scp /tmp/bst-mysql.tar <server>.compute-1.amazonaws.com:/tmp/
+docker load < /tmp/bst-mysql.tar
 
 APPENDIX: 
 
