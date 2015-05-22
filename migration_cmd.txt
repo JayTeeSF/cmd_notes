@@ -1,3 +1,12 @@
+if you reference a model in your migration, be-sure to open (or re-open) that class at the top of your migration file:
+
+class SomeARClassThatExistedWhenYouFirstWroteTheMigration < ActiveRecord::Base; end
+class X < ...Migration..
+def change
+ SomeARClassThatExistedWhenYouFirstWroteTheMigration.do_something
+end
+
+
 script/generate migration change_bottom_728x90_ad_on_newsletter
 #manual: ...though it might have automated, if we appended: <column>:<data_type>
 #up:

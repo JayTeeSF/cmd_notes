@@ -1,0 +1,6 @@
+http://unix.stackexchange.com/a/119433
+
+brew install lrzip
+
+or
+sudo apt-get install lrzip

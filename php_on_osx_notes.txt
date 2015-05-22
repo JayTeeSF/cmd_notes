@@ -1,0 +1,121 @@
+ # /usr/local/opt/php56/sbin/php-fpm --fpm-config /usr/local/etc/php/5.6/php-fpm.conf
+
+# https://gist.github.com/bobthecow/85ad6dfb594d9215b42b
+brew tap homebrew/dupes
+brew tap homebrew/versions
+brew tap homebrew/homebrew-php
+↪ brew install php56 --with-fpm  --with-imap  --without-apache --with-debug
+ 
+# Fix PEAR permissions
+chmod -R ug+w `brew --prefix php56`/lib/php
+pear config-set php_ini /usr/local/etc/php/5.6/php.ini
+ 
+# Fix PEAR config and upgrade
+pear config-set auto_discover 1
+pear update-channels
+pear upgrade
+ 
+
+
+####
+==> Pouring imap-uw-2007f.yosemite.bottle.tar.gz
+🍺  /usr/local/Cellar/imap-uw/2007f: 150 files, 9.5M
+==> Installing php56
+==> Downloading https://www.php.net/get/php-5.6.6.tar.bz2/from/this/mirror
+Already downloaded: /Library/Caches/Homebrew/php56-5.6.6
+Warning: Backing up all known pear.conf and .pearrc files
+Warning: If you have a pre-existing pear install outside
+         of homebrew-php, or you are using a non-standard
+         pear.conf location, installation may fail.
+==> ./configure --prefix=/usr/local/Cellar/php56/5.6.6 --localstatedir=/usr/local/var --sysconfdir=/usr/local/etc/php/5.6 --with-config-file-path=/usr/local/etc/php/5.6 --with-co
+==> make
+==> make install
+==> /usr/local/Cellar/php56/5.6.6/bin/pear config-set php_ini /usr/local/etc/php/5.6/php.ini system
+==> Caveats
+The php.ini file can be found in:
+    /usr/local/etc/php/5.6/php.ini
+
+✩✩✩✩ PEAR ✩✩✩✩
+
+If PEAR complains about permissions, 'fix' the default PEAR permissions and config:
+    chmod -R ug+w /usr/local/Cellar/php56/5.6.6/lib/php
+    pear config-set php_ini /usr/local/etc/php/5.6/php.ini system
+
+✩✩✩✩ Extensions ✩✩✩✩
+
+If you are having issues with custom extension compiling, ensure that
+you are using the brew version, by placing /usr/local/bin before /usr/sbin in your PATH:
+
+      PATH="/usr/local/bin:$PATH"
+
+PHP56 Extensions will always be compiled against this PHP. Please install them
+using --without-homebrew-php to enable compiling against system PHP.
+
+✩✩✩✩ PHP CLI ✩✩✩✩
+
+If you wish to swap the PHP you use on the command line, you should add the following to ~/.bashrc,
+~/.zshrc, ~/.profile or your shell's equivalent configuration file:
+
+      export PATH="$(brew --prefix homebrew/php/php56)/bin:$PATH"
+
+✩✩✩✩ FPM ✩✩✩✩
+
+To launch php-fpm on startup:
+    mkdir -p ~/Library/LaunchAgents
+    cp /usr/local/opt/php56/homebrew.mxcl.php56.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.php56.plist
+
+The control script is located at /usr/local/opt/php56/sbin/php56-fpm
+
+OS X 10.8 and newer come with php-fpm pre-installed, to ensure you are using the brew version you need to make sure /usr/local/sbin is before /usr/sbin in your PATH:
+
+  PATH="/usr/local/sbin:$PATH"
+
+You may also need to edit the plist to use the correct "UserName".
+
+Please note that the plist was called 'homebrew-php.josegonzalez.php56.plist' in old versions
+of this formula.
+
+To have launchd start php56 at login:
+    ln -sfv /usr/local/opt/php56/*.plist ~/Library/LaunchAgents
+Then to load php56 now:
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.php56.plist
+==> Summary
+🍺  /usr/local/Cellar/php56/5.6.6: 499 files,  46M, built in 5.4 minutes
+¿jthomas? ~/dev/anemometer/conf[master]
+
+###
+↪ brew install phpmyadmin
+==> Installing phpmyadmin from homebrew/homebrew-php
+==> Downloading https://github.com/phpmyadmin/phpmyadmin/archive/RELEASE_4_3_11_1.tar.gz
+######################################################################## 100.0%
+==> Caveats
+Note that this formula will NOT install mysql. It is not
+required since you might want to get connected to a remote
+database server.
+
+Webserver configuration example (add this at the end of
+your /etc/apache2/httpd.conf for instance) :
+  Alias /phpmyadmin /usr/local/share/phpmyadmin
+  <Directory /usr/local/share/phpmyadmin/>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    <IfModule mod_authz_core.c>
+      Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+      Order allow,deny
+      Allow from all
+    </IfModule>
+  </Directory>
+Then, open http://localhost/phpmyadmin
+
+More documentation : file:///usr/local/Cellar/phpmyadmin/4.3.11.1/share/phpmyadmin/doc/
+
+Configuration has been copied to /usr/local/etc/phpmyadmin.config.inc.php
+Don't forget to:
+  - change your secret blowfish
+  - uncomment the configuration lines (pma, pmapass ...)
+
+==> Summary
+🍺  /usr/local/Cellar/phpmyadmin/4.3.11.1: 1897 files,  60M, built in 7 seconds

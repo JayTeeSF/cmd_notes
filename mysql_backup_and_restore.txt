@@ -1,0 +1,7 @@
+# Thx to: http://failshell.io/mysql/using-gzip-and-gunzip-with-mysql-to-importexport-backups/
+Exporting:
+mysqldump -u user -p database | gzip > database.sql.gz
+
+Importing:
+gunzip < database.sql.gz | mysql -u user -p database
+

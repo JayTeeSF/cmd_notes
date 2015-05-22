@@ -71,15 +71,17 @@ vboxmanage modifyhd ~/VirtualBox\ VMs/boot2docker-vm/boot2docker-vm.vdi --resize
    # note: /path/to/sources is based on the boot2docker server! If you are using a mac, you should have already
    # shared ~ or some other directory structure...
 ###   docker run -p 3306:3306 -d -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+
+### BEGIN THEORY: 
 # but first:
-#docker run -i -t --name mysql_data -v /var/lib/mysql busybox /bin/sh
-#docker run --name mydb-data --entrypoint /bin/echo mysql Data-only container for mydb
 docker run --name mysql_data mysql:5.5 echo "MySQL data container"
 Then:
 # first time, before importing db:
 # docker run -d --volumes-from mysql_data -p 3306:3306 -v $HOME/sources:/mnt --name=bst-mysql -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
 # after db import, and after rsyncing data from former bst-mysql to
-# laptop: docker-enter bst-mysql; apt-get upgrade; apt-get install rsync; apt-get install ssh; rsync -avz /var/lib/mysql/ jthomas@192.168.1.75:/Users/jthomas/mysql/
+# laptop:
+docker-enter bst-mysql; apt-get upgrade; apt-get install rsync; apt-get install ssh; time rsync -avzW /var/lib/mysql/ jthomas@192.168.1.75:/Users/jthomas/mysql/
+
 # docker save...
 # docker commit <container id> <username/repo>
 # docker rm bst-mysql
@@ -92,6 +94,43 @@ docker run -d --volumes-from mysql_data -p 3306:3306 --name=bst-mysql -e MYSQL_R
 
 # in the meantime (parallel processing): NAH ...not enough diskspace to try this:
 # docker run -d --volumes-from mysql_data -P -v $HOME/sources:/mnt --name=bst-mysql2 -e MYSQL_ROOT_PASSWORD=brainscape123 mysql:5.5
+### END THEORY
+
+Jay copied the following (and just removed the volume configuration):
+  GitHub docker-library/mysql :: mysql - Docker Official Image packaging for MySQL Community Server:
+  https://github.com/docker-library/mysql/tree/8ed790ab199eeef0f36ef0547ae28e5654cbef0d/5.5
+
+  On row 52 of the docker file is this command: VOLUME /var/lib/mysql
+  This sets up a data volume.  It make sense if this were production and you don't want to overwrite the data wen you load a new version.
+  But we actually do want to overwrite the data when we load a new version.
+
+  #See more at: https://intercityup.com/blog/downsizing-docker-containers.html#sthash.aMKqF0Sl.dpuf
+  docker help export to get the data...
+  docker export bc3f060d76bd | gzip -c > bst-mysql.tgz
+
+  # then:
+  gzip -dc bst-mysql.tgz | docker import - bst-mysql -
+
+### what I'm doing:
+cd dev/docker_setup # where I have a modified version of the mysql:5.5 (per the above)
+chmod +x docker-entrypoint.sh
+docker build -t mysql:jayteesf .
+
+docker run -d -P           --name=bst-mysql2 -e MYSQL_ROOT_PASSWORD=<pwd> mysql:jayteesf
+# docker run -d -p 3306:3306 --name=bst-mysql  -e MYSQL_ROOT_PASSWORD=<pwd> mysql:5.5
+docker start bst-mysql
+
+# copying the backup to the directory that is mounted from my local system onto the boot2docker...
+# thus, conserving diskspace inside the virtual-machine
+
+# FAIL:
+# docker run --rm --volumes-from=bst-mysql debian tar cvf - /var/lib/mysql | gzip > /Users/jthomas/mysql-data.tar.gz
+# time="2015-02-27T21:51:49-08:00" level="fatal" msg="An error occurred trying to connect: Post https://192.168.59.106:2376/v1.16/containers/488ebd2c37e268766316e59c7398c96d51c81af5d66d5f07b85b4d72fd991159/wait: EOF"
+
+# BUT can we copy direct to the new docker'd image... <-- NO
+#### docker-enter bst-mysql2; exit # capture the root@<id>
+#### docker-enter bst-mysql; apt-get upgrade; apt-get install rsync; apt-get install ssh; rsync -avz /var/lib/mysql/ root@4e71040f5fef:/var/lib/mysql/
+
 
 # to install docker on the target ubuntu system: see: http://www.liquidweb.com/kb/how-to-install-docker-on-ubuntu-14-04-lts/
 apt-get update

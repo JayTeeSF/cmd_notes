@@ -1,0 +1,2 @@
+↪ find ./public/card_revisions -name "*.json" -exec grep '"card_id" : 45174' {} + | awk -F: '{print $1}'
+./public/card_revisions/8495.json

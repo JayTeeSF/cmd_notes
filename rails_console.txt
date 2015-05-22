@@ -1,3 +1,27 @@
+# rail4:
+# stylesheet_link_tag
+# > class Foo; include ActionView::Helpers::AssetTagHelper; def link_for(tag); stylesheet_link_tag(tag); end;end
+# # => :link_for
+# > Foo.new.stylesheet_link_tag(:arg)
+# #  => "<link rel=\"stylesheet\" media=\"screen\" href=\"/stylesheets/arg.css\" />"
+#
+#
+#  Even simpler:
+#  include ActionView::Helpers::AssetTagHelper
+#  stylesheet_link_tag(:foo)
+#   => "<link rel=\"stylesheet\" media=\"screen\" href=\"/stylesheets/foo.css\" />"
+#
+#   image_tag("unbounded/iphone.png")
+#    => "<img src=\"/images/unbounded/iphone.png\" alt=\"Iphone\" />"
+#   asset_path("unbounded/iphone.png")
+#    => "/unbounded/iphone.png"
+
+# RAILS_ENV=staging bundle exec rails c
+#> puts helper.asset_path("loader.png")
+# => /assets/loader-e5b612c76da15024d8f93d0d1109d8b8.png
+#> puts helper.asset_path("application.js")
+# => /assets/application-397a30df020e229015e2931a61e4ab9d.js
+#
 ### Rails 3.2
 
 # window 1:

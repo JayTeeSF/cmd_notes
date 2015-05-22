@@ -1,0 +1,11 @@
+in addition to sometimes having to delete:
+/var/lib/mysql/ib*
+
+you may also have to delete the .frm files for your database
+/var/lib/mysql/<db>/*.frm
+
+at which point the .ibd files have data, but you can't
+see any tables.
+
+so you have to re-run the table create statements:
+bundle exec rails runner -e test 'p (ActiveRecord::Base.connection.tables).each { |tbl| ActiveRecord::Base.connection.execute("show create table #{tbl}")}'
