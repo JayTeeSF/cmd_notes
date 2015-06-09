@@ -1,6 +1,6 @@
 # what's up with the remote(s):
 ↪ git ls-remote
-# From git@github.com:zoodles/ey-cloud-recipes.git
+# From git@<git-server>.com:<user>/<branch>.git
 # ...
 
 # what's new on this branch vs. the remote repo:
@@ -106,11 +106,11 @@ git pull --rebase # supposedly this will get the stuff on the branch, and put my
 # git commit ...
 # (see workflow below: fetch/rebase/checkout <tracking branch>/pull/merge/push)
 
-to update list of gib branches:
+to update list of git branches:
 git remote prune origin
 # git commit -m "fixes #7529"
 
-git clone ssh://gitolite@gitserver.affinitylabs.com/leadgen
+git clone ssh://gitolite@gitserver.<some_domain>.com/leadgen
 
 # find stuff that I authored (in git log):
 # git log --author=jthomas
@@ -123,8 +123,6 @@ git clone ssh://gitolite@gitserver.affinitylabs.com/leadgen
 #=> HEAD is now at 12f2990 fix joins; sort & filter results; fixes #6535
 # git stash list
 #=> stash@{0}: On 6535_UoPWidget: fastweb_models
-
-# git checkout ...blah
 
 # git checkout <this branch>
 # git stash pop
@@ -152,5 +150,4 @@ git clone ssh://gitolite@gitserver.affinitylabs.com/leadgen
 #
 #       # Delete the topic branch
 #       git branch -d <topic_branch>
-#
 #
