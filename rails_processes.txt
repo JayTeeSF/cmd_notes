@@ -1,0 +1,26 @@
+Motivation:
+  you know your server is having trouble, you may even have generated logs that simply capture the memory usage for each request (along with the transaction-ID, so you can tie it back to the production.log file)
+  But what you still want, is a way to know --in real-time-- what's going on on your servers.
+
+ What are those unicorn- or passenger-workers doing?! (Especially if what they do fails to complete ...and thus fails to make it to your log file)
+
+  In that case you can update your application_controller with a before & after (or around) filter to update your process-listing
+ps auxwww (btw, vs. ps -eafwww) is a great way to see what's running and how-much memory it's taking.
+
+Solution:
+    Thanks to a (somewhat outdated) article by Dave Thomas)
+    You can update the process title during & after each request:
+    Per the Ruby 2 docs: http://ruby-doc.org/core-2.2.2/Process.html#method-c-setproctitle
+def set_process_name_from_request
+  Process.setproctitle("#{Whatever_Your_Process_currently_says} -- #{request.path[0,128]}")
+end
+
+# an astrisk is appended when the process becomes idle
+def unset_process_name_from_request
+  Process.setproctitle("#{Whatever_Your_Process_currently_says} -- #{request.path[0,128]}*")
+end
+
+e.g.:
+USER       PID %CPU %MEM    VSZ   RSS    TTY  STAT START   TIME COMMAND
+my_user    342 2.3   9.5 1425844 366828  ?    Sl   Aug11   3:37 WhateverYourProcessSays -- /controller/some_action
+my_user    342 2.3   9.5 1425844 366828  ?    Sl   Aug11   3:37 WhateverYourProcessSays -- /controller/other_action*
