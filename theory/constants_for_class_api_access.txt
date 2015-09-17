@@ -1,0 +1,28 @@
+Instead of:
+
+class MyClass
+  ...
+  VALUE1 = "value1"
+  VALUE2 = "value2"
+  VALUE3 = "value3"
+  VALUES = [VALUE1, VALUE2, VALUE3]
+
+  ...
+end
+
+try:
+
+class MyClass
+  ...
+  VALUES = {
+    VALUE1: "value1",
+    VALUE2: "value2",
+    VALUE3: "value3"
+  }.freeze
+  ...
+end
+
+Now outsiders can access those values with a nice api for discovery
+too...
+
+and, in theory, you can avoid the (slow) constant lookups (using freeze)
