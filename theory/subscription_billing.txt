@@ -1,0 +1,12 @@
+SubscriptionBilling
+id, user_id, receipt (apple 64bit/stripe_token), gateway(Apple/Google/Stripe), term, plan, created_at, canceled_at, next_renewal_at, refunded_at
+
+However, keep a separate (read-only) history table:
+
+Subscription(History/Current):
+id, user_id, subscription_id, plan(trial,premium,etc), started_at (current month), stopped_at(next month)
+
+before sending to the client perform all the calculations and augment the JSON:
+api_version: ...
+subscription_expiration: stopped_at.to_i - Time.now.to_i #how many seconds left
+cache_expiration: 3600 # # of seconds till the client has to ask again.

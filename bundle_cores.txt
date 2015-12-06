@@ -1,0 +1,5 @@
+# Thx to: https://allenan.com/6-simple-tweaks-to-improve-your-productivity-with-rails/
+
+number_of_cores=$(sysctl -n hw.ncpu)  
+bundle config --global jobs $((number_of_cores - 1))  
+
