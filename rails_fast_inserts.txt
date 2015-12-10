@@ -1,0 +1,44 @@
+Thanks to this blog post:
+https://blog.codeship.com/speeding-up-bulk-imports-in-rails
+
+I was inspired to combine some of my favorite techniques for fast
+inserts with rails ...my-style:
+
+TLDR;: use active-import inside a transaction in order to (only) bulk insert valid records
+
+Background:
+Historically I have used active-import (whenever possible)
+The issue is that this doesn't run any callbacks. So business logic
+has to be stored in multiple places (the db & the model)
+
+Recently:
+I started preparing to speed-up inserts (hoping to one-day parallelize
+some code) by first partitioning the valid objects from the invalid:
+
+def handle?(invalid_objects)
+  if invalid_objects.present?
+    message = "#{invalid_objects.size} Invalid object(s), e.g.  #{invalid_objects.first.errors.inspect}"
+    Raven.capture_message(message) if (Rails.env.production? || Rails.env.staging?)
+    Rails.logger.warn(message)
+  end
+end
+
+valid_objects, invalid_objects = fetched_objects.partition { |fo| fo.valid? }
+if handle?(invalid_objects)
+  valid_objects.map { |valid_object| valid_object.save! }
+end
+
+That was nice -- at least I could decide if _one_ failure was worthy of skipping all the saves, before starting the saves.
+Alternatively, I could report the errors and then save the rest.
+
+New-hottness:
+  valid_objects, invalid_objects = fetched_objects.partition { |fo| fo.valid? }
+  if handle?(invalid_objects)
+    Object.transaction do
+      if require_callbacks?
+        valid_objects.map { |valid_object| valid_object.save! }
+      else
+        Object.import valid_objects, validate: false
+      end
+    end
+  end
