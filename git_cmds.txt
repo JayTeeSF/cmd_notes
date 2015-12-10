@@ -5,9 +5,11 @@
 
 # what's new on this branch vs. the remote repo:
 git log origin/master..
+git log other_local_branch.. <-- show the commits on this branch that are not on other_local_branch
 
 # what's new in the remote that's not on this branch:
 git log ..origin/master
+git log ..other_local_branch <-- show the commits on other_local_branch that are not on this branch
 
 # use opendiff to compare the changes in my working directory to what's in the repo...
 git difftool Gemfile
