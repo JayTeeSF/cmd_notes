@@ -1,0 +1,39 @@
+brew install node
+brew install watchman
+brew install flow
+
+npm install -g react-native-cli
+
+# get xCode for iOS
+ brew install android-sdk
+export ANDROID_HOME=/usr/local/opt/android-sdk
+# Now run the 'android' tool to install the actual SDK stuff.
+
+
+react-native init top5
+This will walk you through creating a new React Native project in
+/Users/jthomas/dev/rn_top5/top5
+Installing react-native package from npm...
+Setting up new React Native app in /Users/jthomas/dev/rn_top5/top5
+To run your app on iOS:
+   cd /Users/jthomas/dev/rn_top5/top5
+   react-native run-ios
+   - or -
+   Open /Users/jthomas/dev/rn_top5/top5/ios/top5.xcodeproj in Xcode
+   Hit the Run button
+To run your app on Android:
+   Have an Android emulator running (quickest way to get started), or a
+device connected
+   cd /Users/jthomas/dev/rn_top5/top5
+   react-native run-android
+
+
+## Appendix
+cd dev/rn_top5/
+vi README.txt
+echo $ANDROID_HOME
+more README.txt 
+brew install android-sdk
+vi README.txt
+export ANDROID_HOME=/usr/local/opt/android-sdk
+android

@@ -1,0 +1,14 @@
+What will:
+```scope :profile_id_for, ->(user_id) {
+      where(user_id: user_id).pluck(:id).first
+}```
+
+return, if there is NO matching record in that table for the specified user_id?
+
+(misleading) hint: typically (when there is a matching record for the user_id it returns the `id` of that row)
+
+a) nil [which means nothing, in Ruby]
+b) 42 [cuz, of course, that’s the universal answer]
+c) EVERY record in that ENTIRE 2M row table
+
+correct (crazy) answer, `c
