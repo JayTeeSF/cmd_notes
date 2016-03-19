@@ -1,0 +1,15 @@
+# This assumes you are working in your rails root, and you create a "hidden" directory .ignore
+# for storing the (temporary) cert & key
+
+# for a (default) 30-day cert:
+# hit enter a bunch of times...
+openssl req -x509 -sha256 -newkey rsa:2048 -keyout ./.ignore/key.pem -out ./.ignore/cert.pem -days 30 -nodes
+
+# get a simply ruby-based webserver (puma):
+gem install puma --no-ri --no-rdoc
+
+# grep for your nic card's external IP. (This assumes you know the subnet): 
+# ifconfig -a | grep 192
+# then use the ip you found (not the subnet mask x.y.z.255) to start puma:
+puma -b 'ssl://192.168.1.64:3000?key=./.ignore/key.pem&cert=./.ignore/cert.pem'
+
