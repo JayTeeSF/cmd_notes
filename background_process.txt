@@ -1,0 +1,3 @@
+# detect when a process (that's already running) is completed
+export PROC_ID=13423
+date; while kill -0 ${PROC_ID} >/dev/null 2>&1; do echo "PROCESS IS RUNNING"; sleep 60; done; date

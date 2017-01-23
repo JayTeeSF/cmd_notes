@@ -15,12 +15,15 @@ Recently:
 I started preparing to speed-up inserts (hoping to one-day parallelize
 some code) by first partitioning the valid objects from the invalid:
 
-def handle?(invalid_objects)
+# probably need a way to pass-in what needs to be tracked/reported, e.g. fetch_objects.map(&:id)
+def handle?(invalid_objects, false_for_any_failure=false)
   if invalid_objects.present?
     message = "#{invalid_objects.size} Invalid object(s), e.g.  #{invalid_objects.first.errors.inspect}"
     Raven.capture_message(message) if (Rails.env.production? || Rails.env.staging?)
     Rails.logger.warn(message)
+    return !false_for_any_failure
   end
+  return true
 end
 
 valid_objects, invalid_objects = fetched_objects.partition { |fo| fo.valid? }
@@ -32,10 +35,11 @@ That was nice -- at least I could decide if _one_ failure was worthy of skipping
 Alternatively, I could report the errors and then save the rest.
 
 New-hottness:
+  do_require_callbacks = false # or true ...you decide
   valid_objects, invalid_objects = fetched_objects.partition { |fo| fo.valid? }
   if handle?(invalid_objects)
     Object.transaction do
-      if require_callbacks?
+      if do_require_callbacks
         valid_objects.map { |valid_object| valid_object.save! }
       else
         Object.import valid_objects, validate: false
