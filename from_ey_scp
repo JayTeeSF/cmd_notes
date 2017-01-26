@@ -21,30 +21,35 @@ ROLES = {
   db_slaves: {flag: '--db-slaves', roles: ['solo', 'db_slave'], title: 'database slaves'},
   util_servers: {flag: '--util-servers', roles: ['solo', 'util'], title: 'utility servers'}
 }
-  
 
+
+download_options = {}
 options = {roles: []}
 option_parser = OptionParser.new do |opts|
-    opts.banner = "Usage: ey-scp -e ENVIRONMENT [OPTIONS] LOCAL_SOURCE_FILE REMOTE_DESTINATION"
+  opts.banner = "Usage: ey-scp -e ENVIRONMENT [OPTIONS] LOCAL_SOURCE_FILE REMOTE_DESTINATION"
 
-    opts.on("-e", "--environment [ENVIRONMENT]", "environment to deploy to (required)") do |e|
-      options[:environment] = e
-    end
+  opts.on("-e", "--environment [ENVIRONMENT]", "environment to deploy to (required)") do |e|
+    options[:environment] = e
+  end
 
-    opts.on("-A", "--all", "deploy to all roles in environment") do |a|
-      options[:roles] << 'all'
-    end
+  opts.on("-r", "--recursive", "download recursively") do |r|
+    download_options[:recursive] = true
+  end
 
-    ROLES.each do |server_type, properties|
-      opts.on( properties[:flag] , "deploy to #{properties[:title]} in environment") do |a|
-        options[:roles] = options[:roles] | properties[:roles] 
-      end
-    end
+  opts.on("-A", "--all", "deploy to all roles in environment") do |a|
+    options[:roles] << 'all'
+  end
 
-    opts.on_tail("-h", "--help", "Show this message") do
-      puts opts
-      exit
+  ROLES.each do |server_type, properties|
+    opts.on( properties[:flag] , "deploy to #{properties[:title]} in environment") do |a|
+      options[:roles] = options[:roles] | properties[:roles] 
     end
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
 end
 option_parser.parse!
 
@@ -97,12 +102,17 @@ servers = instances.map{ |inst| inst['public_hostname'] }
 servers.each do |server|
   begin
     puts "Downloading from #{server}..."
-dest_path = File.dirname(options[:destination])
-dest_sub_path = server
-dest_file = File.basename(options[:destination])
-destination = File.join(dest_path, dest_sub_path, dest_file)
-FileUtils.mkdir_p(destination)
-    Net::SCP.download!(server, 'deploy', options[:source], destination )
+    if options[:destination].end_with?("/")
+      dest_path = options[:destination]
+      dest_file = "/"
+    else
+      dest_path = File.dirname(options[:destination])
+      dest_file = File.basename(options[:destination])
+    end
+    dest_sub_path = server
+    destination = File.join(dest_path, dest_sub_path, dest_file)
+    FileUtils.mkdir_p(destination)
+    Net::SCP.download!(server, 'deploy', options[:source], destination, download_options )
   rescue Net::SCP::Error => ex
     STDERR.puts "Error downloading from #{server}: #{ex.message}"
   end
