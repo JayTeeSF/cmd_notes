@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+# created by Steven Dunlap of Roadtrippers
+# licensed under MIT, see LICENSE.md for information
+# absolutely no warranty provided 
+
+# right now this is pretty hacked together; maybe someday we'll clean it up
+
+require 'pp'
+require 'yaml'
+require 'faraday'
+require 'json'
+require 'optparse'
+require 'net/scp'
+require 'fileutils'
+
+ROLES = {
+  app_servers: {flag: '--app-servers', roles: ['solo', 'app', 'app_master'], title: 'application servers'},
+  app_master: {flag: '--app-master', roles: ['solo', 'app_master'], title: 'application master'},
+  db_servers: {flag: '--db-servers', roles: ['solo', 'db_master', 'db_slave'], title: 'database servers'},
+  db_master: {flag: '--db-master', roles: ['solo', 'db_master'], title: 'database master'},
+  db_slaves: {flag: '--db-slaves', roles: ['solo', 'db_slave'], title: 'database slaves'},
+  util_servers: {flag: '--util-servers', roles: ['solo', 'util'], title: 'utility servers'}
+}
+  
+
+options = {roles: []}
+option_parser = OptionParser.new do |opts|
+    opts.banner = "Usage: ey-scp -e ENVIRONMENT [OPTIONS] LOCAL_SOURCE_FILE REMOTE_DESTINATION"
+
+    opts.on("-e", "--environment [ENVIRONMENT]", "environment to deploy to (required)") do |e|
+      options[:environment] = e
+    end
+
+    opts.on("-A", "--all", "deploy to all roles in environment") do |a|
+      options[:roles] << 'all'
+    end
+
+    ROLES.each do |server_type, properties|
+      opts.on( properties[:flag] , "deploy to #{properties[:title]} in environment") do |a|
+        options[:roles] = options[:roles] | properties[:roles] 
+      end
+    end
+
+    opts.on_tail("-h", "--help", "Show this message") do
+      puts opts
+      exit
+    end
+end
+option_parser.parse!
+
+if( options[:environment].nil? )
+  puts "Environment is required!"
+  puts option_parser.help
+  exit 1
+end
+
+if( options[:roles].empty? )
+  puts 'Warning, no role supplied; assuming all roles.'
+  options[:roles] = ['all']
+end
+
+unless( options[:source] = ARGV[0] )
+  puts 'A source file is required!'
+  puts option_parser.help
+  exit 1
+end
+
+unless( options[:destination] = ARGV[1] )
+  puts 'A destination is required!'
+  puts option_parser.help
+  exit 1
+end
+
+# get EY API token
+begin 
+  api_token_file = File.open("#{ENV['HOME']}/.eyrc") 
+rescue 
+  raise('ERROR: cannot open ~/.eyrc.  Run "ey login" in your project directory.')
+end
+api_token = YAML.load(api_token_file)['api_token']
+
+# get environment data
+conn = Faraday.new( url: 'https://cloud.engineyard.com:443', headers: {'X-EY-Cloud-Token' => api_token} )
+response = conn.get '/api/v2/environments'
+environments = JSON.parse(response.body)['environments']
+
+# parse out server lists
+environment = environments.select{|env| env['name'] == options[:environment]}.first
+if( options[:roles].include? 'all' )
+  instances = environment['instances']
+else
+  instances = environment['instances'].select{ |inst| options[:roles].include?(inst['role']) } 
+end
+servers = instances.map{ |inst| inst['public_hostname'] }
+
+#time to do the copying!
+servers.each do |server|
+  begin
+    puts "Downloading from #{server}..."
+dest_path = File.dirname(options[:destination])
+dest_sub_path = server
+dest_file = File.basename(options[:destination])
+destination = File.join(dest_path, dest_sub_path, dest_file)
+FileUtils.mkdir_p(destination)
+    Net::SCP.download!(server, 'deploy', options[:source], destination )
+  rescue Net::SCP::Error => ex
+    STDERR.puts "Error downloading from #{server}: #{ex.message}"
+  end
+end
