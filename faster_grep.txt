@@ -1,0 +1,31 @@
+I needed to extract Bot traffic from my Rails logs:
+what request, what bot, how-long the request took
+(and specifically for GoogleBot)
+
+Fortunately our logs are already stitched together with a transaction_id, so all I really needed to do was grep for the Bot line,
+then from there I could go back to the logs for the other lines of those transactions.
+
+Nevertheless, when I did it, I noticed it was slow. My colleague wanted to just stuff all the data in Splunk. But I couldn't believe it was going to index the data and then search, faster than I could (should) be able to grep it.
+
+That's when I ran across this command: "parallel" <-- you can almost certainly duplicate this functionality with some "tee" or "|" and "( sub-shell )" scripting-fu
+But it looks useful/helpful:
+
+BEGIN SOF: http://stackoverflow.com/a/11110944
+  For big files, the fastest possible grep can be accomplished with GNU parallel. An example using parallel and grep can be found here.
+
+  For your purposes, you may like to try:
+
+  cat file.fasta | parallel -j 4 --pipe --block 10M grep "^\>" > output.txt
+  The above will use four cores, and parse 10 MB blocks to grep. The block-size is optional, but I find using a 10 MB block-size quite a bit faster on my system. YRMV.
+END SOF
+
+In that example the user's input file was called "file.fasta" and they were grep'ing for lines where the first character was an arrow
+
+But better than that, checkout sift!
+It has multi-core support built-in!
+
+brew install sift
+
+# show line numbers, ignore binary files, and adhere to gitignore files:
+sift -n --binary-skip --git --write-config
+
