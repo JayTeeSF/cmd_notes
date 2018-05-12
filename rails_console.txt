@@ -1,3 +1,10 @@
+running rake tasks:
+require 'rake'
+MyRailsApp::Application.load_tasks # <-- MISSING LINE
+Rake::Task['my_task'].invoke
+
+###
+
 # rail4:
 # stylesheet_link_tag
 # > class Foo; include ActionView::Helpers::AssetTagHelper; def link_for(tag); stylesheet_link_tag(tag); end;end
