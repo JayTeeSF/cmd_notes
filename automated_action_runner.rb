@@ -91,11 +91,8 @@
   end
   
   def extend_with_autorun
-    def @controller_instance.autorun(action_name, action_params, action_env, current_user_value=nil)
+    def @controller_instance.autorun(action_name, action_params)
       self.params = action_params # suppress strong parameters exception
-      self.request = ActionDispatch::Request.new(action_env)
-      self.response = ActionDispatch::Response.new
-      define_singleton_method(:current_user, -> { current_user_value })
 
       send(action_name) # do it
       return StatusObject.new(true, nil)
