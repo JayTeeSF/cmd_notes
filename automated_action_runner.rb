@@ -65,22 +65,31 @@
   def initialize(controller, controller_action, user_obj)
     @controller = controller
     @controller = controller.constantize unless controller.respond_to?(:name)
-    @controller_instance = @controller.new
+
     @controller_action = controller_action
-    @env_obj = REQUEST_ENV.dup
+    @env_obj = REQUEST_ENV
     @user_obj = user_obj
   end
 
   def run(params_hash)
     Rails.logger.warn %Q|[AutomatedAction]: #{@controller.name}##{@controller_action}(#{params_hash.inspect})|
-    extend_with_autorun unless @controller_instance.respond_to?(:autorun)
 
-    @controller_instance.autorun(@controller_action, params_hash, @env_obj, @user_obj)
+    setup_for_autorun
+    @controller_instance.autorun(@controller_action, params_hash)
   end
 
 
   private
 
+  def setup_for_autorun
+    @controller_instance = @controller.new
+    @controller_instance.request = ActionDispatch::Request.new(@env_obj.dup)
+    @controller_instance.response = ActionDispatch::Response.new
+    @controller_instance.define_singleton_method(:current_user, -> { @user_obj })
+
+    extend_with_autorun unless @controller_instance.respond_to?(:autorun)
+  end
+  
   def extend_with_autorun
     def @controller_instance.autorun(action_name, action_params, action_env, current_user_value=nil)
       self.params = action_params # suppress strong parameters exception
